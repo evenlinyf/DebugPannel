@@ -20,11 +20,28 @@ class ViewController: UIViewController {
         label.textAlignment = .center
         label.textColor = .secondaryLabel
 
-        view.addSubview(label)
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("打开调试面板", for: .normal)
+        button.addTarget(self, action: #selector(openDebugPanel), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [label, button])
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 12
+
+        view.addSubview(stack)
 
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+
+    @objc private func openDebugPanel() {
+        let controller = HCEnvPanelViewController()
+        let navigationController = UINavigationController(rootViewController: controller)
+        present(navigationController, animated: true)
     }
 }
