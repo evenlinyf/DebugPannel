@@ -155,7 +155,7 @@ static NSString *const kHCInfoCellId = @"HCInfoCell";
             cell.valueChanged = ^(NSInteger value) {
                 [weakSelf applyValue:@(value) forItem:item];
             };
-            [cell configureWithItem:item minimum:1 maximum:5];
+            [cell configureWithItem:item minimum:item.stepperMin maximum:item.stepperMax];
             return cell;
         }
         case HCCellItemTypeInfo: {

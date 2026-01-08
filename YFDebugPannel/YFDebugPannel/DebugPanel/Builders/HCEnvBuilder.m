@@ -73,6 +73,8 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     HCCellItem *cluster = [HCCellItem itemWithIdentifier:HCEnvItemIdCluster title:@"环境编号" type:HCCellItemTypeStepper];
     cluster.storeKey = kEnvItemStoreCluster;
     cluster.defaultValue = @(1);
+    cluster.stepperMin = kEnvClusterMin;
+    cluster.stepperMax = kEnvClusterMax;
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
     cluster.value = @(initialCluster);
     cluster.detail = [NSString stringWithFormat:@"%ld", (long)initialCluster];
