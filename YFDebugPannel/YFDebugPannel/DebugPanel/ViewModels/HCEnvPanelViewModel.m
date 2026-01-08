@@ -3,6 +3,7 @@
 /// 用途：环境面板 ViewModel 实现。
 #import "HCEnvPanelViewModel.h"
 #import "HCEnvBuilder.h"
+#import "HCEnvPanelBuilder.h"
 #import "HCEnvKit.h"
 #import "HCCellItem.h"
 #import "HCEnvSection.h"
@@ -28,9 +29,8 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        HCEnvSection *envSection = [HCEnvBuilder buildEnvSection];
-        HCEnvSection *configSection = [HCEnvBuilder buildConfigSeciton];
-        _sections = @[envSection, configSection];
+        _sections = [HCEnvPanelBuilder buildSections];
+        HCEnvSection *envSection = _sections.firstObject;
         _dependencyEngine = [[DependencyEngine alloc] initWithItems:envSection.items];
         _indexMap = @{};
         [self loadPersistedValues];
