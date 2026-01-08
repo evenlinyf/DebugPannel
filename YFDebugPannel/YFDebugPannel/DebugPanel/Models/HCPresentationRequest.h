@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板提示展示请求模型声明。
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, HCPresentationType) {

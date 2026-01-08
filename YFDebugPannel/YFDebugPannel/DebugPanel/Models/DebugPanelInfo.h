@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板基础信息模型声明。
 #import <Foundation/Foundation.h>
 
 @interface DebugPanelInfo : NSObject

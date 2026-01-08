@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境配置区块构建器实现。
 #import "HCEnvBuilder.h"
 #import "HCEnvKit.h"
 #import "HCCellItem.h"
@@ -53,7 +56,7 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     return config;
 }
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置区块的构建类。
 @implementation HCEnvBuilder
@@ -152,7 +155,7 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"生效结果" type:HCCellItemTypeString];
+    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"生效结果" type:HCCellItemTypeEditableInfo];
     result.storeKey = kEnvItemStoreResult;
     result.defaultValue = @"";
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";

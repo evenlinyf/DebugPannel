@@ -1,6 +1,9 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境配置模型与工具类声明。
 #import <Foundation/Foundation.h>
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境类型枚举，用于区分线上、UAT、DEV 配置。
 typedef NS_ENUM(NSInteger, HCEnvType) {
@@ -14,7 +17,7 @@ typedef NS_ENUM(NSInteger, HCEnvType) {
 
 FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：保存环境配置的实体，供构建生效结果与持久化使用。
 @interface HCEnvConfig : NSObject
@@ -30,7 +33,7 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 @property (nonatomic, copy) NSString *customBaseURL;
 @end
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：根据配置计算后的展示结果，用于 UI 展示与生效域名输出。
 @interface HCEnvBuildResult : NSObject
@@ -42,7 +45,7 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 @property (nonatomic, copy) NSString *isolation;
 @end
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置读取、保存与结果构建的工具类。
 @interface HCEnvKit : NSObject

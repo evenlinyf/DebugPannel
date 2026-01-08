@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板通用 cell 数据模型定义。
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, HCCellItemType) {
@@ -7,7 +10,8 @@ typedef NS_ENUM(NSInteger, HCCellItemType) {
     HCCellItemTypeAction,
     HCCellItemTypeSegment,
     HCCellItemTypePicker,
-    HCCellItemTypeInfo
+    HCCellItemTypeInfo,
+    HCCellItemTypeEditableInfo
 };
 
 @class HCCellItem;

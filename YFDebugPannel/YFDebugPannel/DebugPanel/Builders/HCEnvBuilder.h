@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境配置区块构建器声明。
 #import <Foundation/Foundation.h>
 
 @class HCEnvSection;
@@ -11,7 +14,7 @@ FOUNDATION_EXPORT NSString *const HCEnvItemIdVersion;
 FOUNDATION_EXPORT NSString *const HCEnvItemIdResult;
 FOUNDATION_EXPORT NSString *const HCEnvItemIdElb;
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：构建环境配置面板的 section 与 item。
 @interface HCEnvBuilder : NSObject
