@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 final class HCEnvPanelViewModel {
     private(set) var sections: [HCEnvSection]

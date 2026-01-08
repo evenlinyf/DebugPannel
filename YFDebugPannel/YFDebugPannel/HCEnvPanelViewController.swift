@@ -133,7 +133,7 @@ extension HCEnvPanelViewController: UITableViewDataSource {
             cell.textLabel?.text = item.title
             cell.textLabel?.textColor = .label
             cell.detailTextLabel?.textColor = .secondaryLabel
-            cell.userInteractionEnabled = false
+            cell.isUserInteractionEnabled = false
             cell.accessoryType = .none
             if let desc = item.desc, !desc.isEmpty {
                 let detail = item.detail ?? ""
@@ -149,7 +149,7 @@ extension HCEnvPanelViewController: UITableViewDataSource {
             cell.textLabel?.text = item.title
             cell.detailTextLabel?.text = item.detail
             cell.textLabel?.textColor = item.enabled ? .label : .secondaryLabel
-            cell.userInteractionEnabled = true
+            cell.isUserInteractionEnabled = true
             cell.accessoryType = .disclosureIndicator
             cell.selectionStyle = .default
             return cell
