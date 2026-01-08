@@ -139,7 +139,6 @@
     } else {
         [defaults removeObjectForKey:item.storeKey];
     }
-    [defaults synchronize];
 }
 
 - (void)persistEnvConfig {
