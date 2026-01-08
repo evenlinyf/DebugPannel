@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.YFDebugPannel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/debug_panel_header</item>
+        <item name="colorPrimaryVariant">@color/debug_panel_header</item>
+        <item name="colorOnPrimary">@color/debug_panel_surface</item>
+        <item name="colorSurface">@color/debug_panel_surface</item>
+        <item name="colorOnSurface">@color/debug_panel_header</item>
+    </style>
+</resources>

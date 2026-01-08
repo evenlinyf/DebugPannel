@@ -1,0 +1,5 @@
+<resources>
+    <color name="debug_panel_header">#121212</color>
+    <color name="debug_panel_subtle">#666666</color>
+    <color name="debug_panel_surface">#FFFFFF</color>
+</resources>
