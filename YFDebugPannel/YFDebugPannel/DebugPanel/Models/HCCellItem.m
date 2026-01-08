@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板 cell 数据模型实现。
 #import "HCCellItem.h"
 
 @interface HCCellItem ()

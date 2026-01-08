@@ -1,10 +1,13 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境面板 ViewModel 声明。
 #import <Foundation/Foundation.h>
 
 @class HCEnvSection;
 @class HCCellItem;
 @class HCPresentationRequest;
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境面板的 ViewModel，负责数据驱动与联动刷新。
 @interface HCEnvPanelViewModel : NSObject

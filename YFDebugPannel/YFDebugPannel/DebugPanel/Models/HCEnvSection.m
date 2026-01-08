@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板分组 section 模型实现。
 #import "HCEnvSection.h"
 
 @implementation HCEnvSection

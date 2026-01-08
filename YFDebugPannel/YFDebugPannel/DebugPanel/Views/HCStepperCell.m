@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板步进器 cell 实现。
 #import "HCStepperCell.h"
 #import "HCCellItem.h"
 #import "HCValueHelpers.h"
@@ -41,9 +44,13 @@
     self.stepper.minimumValue = minimum;
     self.stepper.maximumValue = maximum;
     self.stepper.enabled = item.enabled;
+    UIColor *labelColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+    self.textLabel.textColor = labelColor;
+    self.detailTextLabel.textColor = UIColor.secondaryLabelColor;
     NSInteger value = HCIntValue(item.value);
     self.stepper.value = value;
     self.valueLabel.text = [NSString stringWithFormat:@"%ld", (long)value];
+    self.valueLabel.textColor = item.enabled ? UIColor.systemRedColor : UIColor.secondaryLabelColor;
 }
 
 - (void)stepperChanged:(UIStepper *)sender {

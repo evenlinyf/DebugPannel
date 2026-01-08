@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板分段选择 cell 实现。
 #import "HCSegmentCell.h"
 #import "HCCellItem.h"
 #import "HCValueHelpers.h"

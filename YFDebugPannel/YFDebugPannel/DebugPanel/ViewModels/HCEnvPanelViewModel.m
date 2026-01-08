@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境面板 ViewModel 实现。
 #import "HCEnvPanelViewModel.h"
 #import "HCEnvBuilder.h"
 #import "HCEnvKit.h"
@@ -8,7 +11,7 @@
 #import "HCValueHelpers.h"
 #import <UIKit/UIKit.h>
 
-/// 创建时间：2025/03/01
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境面板 ViewModel 的私有状态。
 @interface HCEnvPanelViewModel ()
@@ -45,7 +48,7 @@
 
 - (NSArray<NSIndexPath *> *)updateItem:(HCCellItem *)item value:(id)value {
     item.value = value;
-    if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper) {
+    if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
         item.detail = value ? [NSString stringWithFormat:@"%@", value] : nil;
     }
     if (item.valueTransformer) {
@@ -91,7 +94,7 @@
             } else if (item.defaultValue) {
                 item.value = item.defaultValue;
             }
-            if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper) {
+            if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
                 item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
             }
         }

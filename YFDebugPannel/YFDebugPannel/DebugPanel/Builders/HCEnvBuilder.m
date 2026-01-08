@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：环境配置区块构建器实现。
 #import "HCEnvBuilder.h"
 #import "HCEnvKit.h"
 #import "HCCellItem.h"
@@ -32,7 +35,28 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
-/// 创建时间：2025/03/01
+static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *itemsById) {
+    HCEnvConfig *config = [[HCEnvConfig alloc] init];
+    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
+    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
+    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
+    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
+    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
+    config.envType = HCIntValue(envItem.value);
+    config.clusterIndex = MAX(kEnvClusterMin, HCIntValue(clusterItem.value));
+    config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
+    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
+    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
+    NSString *autoBaseURL = autoBaseURLForConfig(config);
+    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
+        config.customBaseURL = resultValue;
+    } else {
+        config.customBaseURL = @"";
+    }
+    return config;
+}
+
+/// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置区块的构建类。
 @implementation HCEnvBuilder
@@ -133,7 +157,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"生效结果" type:HCCellItemTypeString];
+    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"生效结果" type:HCCellItemTypeEditableInfo];
     result.storeKey = kEnvItemStoreResult;
     result.defaultValue = @"";
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";

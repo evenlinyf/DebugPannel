@@ -1,3 +1,6 @@
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：调试面板主页面控制器实现。
 #import "HCEnvPanelViewController.h"
 #import "HCEnvPanelViewModel.h"
 #import "HCCellItem.h"
@@ -19,6 +22,7 @@ static NSString *const kHCSwitchCellId = @"HCSwitchCell";
 static NSString *const kHCStepperCellId = @"HCStepperCell";
 static NSString *const kHCValueCellId = @"HCValueCell";
 static NSString *const kHCInfoCellId = @"HCInfoCell";
+static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -31,6 +35,8 @@ static NSString *const kHCInfoCellId = @"HCInfoCell";
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 60.0;
     [self.tableView registerClass:[HCSegmentCell class] forCellReuseIdentifier:kHCSegmentCellId];
     [self.tableView registerClass:[HCSwitchCell class] forCellReuseIdentifier:kHCSwitchCellId];
     [self.tableView registerClass:[HCStepperCell class] forCellReuseIdentifier:kHCStepperCellId];
@@ -179,6 +185,27 @@ static NSString *const kHCInfoCellId = @"HCInfoCell";
             }
             return cell;
         }
+        case HCCellItemTypeEditableInfo: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCEditableInfoCellId];
+            if (!cell) {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kHCEditableInfoCellId];
+            }
+            UILabel *accessoryLabel = [[UILabel alloc] init];
+            accessoryLabel.text = @"编辑";
+            accessoryLabel.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
+            accessoryLabel.textColor = item.enabled ? self.view.tintColor : UIColor.secondaryLabelColor;
+            [accessoryLabel sizeToFit];
+            cell.accessoryView = accessoryLabel;
+            cell.textLabel.text = item.title;
+            cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+            cell.detailTextLabel.text = item.detail;
+            cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+            cell.detailTextLabel.numberOfLines = 0;
+            cell.detailTextLabel.lineBreakMode = NSLineBreakByCharWrapping;
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            cell.userInteractionEnabled = YES;
+            return cell;
+        }
         case HCCellItemTypeString:
         case HCCellItemTypePicker:
         case HCCellItemTypeAction: {
@@ -208,6 +235,7 @@ static NSString *const kHCInfoCellId = @"HCInfoCell";
     }
     switch (item.type) {
         case HCCellItemTypeString:
+        case HCCellItemTypeEditableInfo:
             [self presentStringInputForItem:item];
             break;
         case HCCellItemTypePicker:
