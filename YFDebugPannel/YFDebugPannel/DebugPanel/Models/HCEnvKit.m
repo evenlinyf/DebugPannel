@@ -11,6 +11,7 @@ NSNotificationName const HCEnvKitConfigDidChangeNotification = @"HCEnvKitConfigD
         _clusterIndex = 1;
         _isolation = @"";
         _version = @"v1";
+        _customBaseURL = @"";
     }
     return self;
 }
@@ -25,7 +26,9 @@ NSNotificationName const HCEnvKitConfigDidChangeNotification = @"HCEnvKitConfigD
 static NSString *const kHCEnvKitDefaultsKey = @"HCEnvKit.config";
 static NSString *const kHCEnvKitReleaseBaseURL = @"https://release.example.com";
 static NSString *const kHCEnvKitUatTemplate = @"https://uat-%ld-%@.example.com";
+static NSString *const kHCEnvKitUatTemplateNoVersion = @"https://uat-%ld.example.com";
 static NSString *const kHCEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
+static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example.com";
 
 + (HCEnvConfig *)currentConfig {
     NSDictionary *stored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kHCEnvKitDefaultsKey];
@@ -41,6 +44,7 @@ static NSString *const kHCEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
         }
         config.isolation = stored[@"isolation"] ?: @"";
         config.version = stored[@"version"] ?: @"v1";
+        config.customBaseURL = stored[@"customBaseURL"] ?: @"";
     }
     return config;
 }
@@ -50,7 +54,8 @@ static NSString *const kHCEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
         @"envType": @(config.envType),
         @"clusterIndex": @(config.clusterIndex),
         @"isolation": config.isolation ?: @"",
-        @"version": config.version ?: @"v1"
+        @"version": config.version ?: @"v1",
+        @"customBaseURL": config.customBaseURL ?: @""
     };
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:payload forKey:kHCEnvKitDefaultsKey];
@@ -61,19 +66,34 @@ static NSString *const kHCEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
 + (HCEnvBuildResult *)buildResult:(HCEnvConfig *)config {
     HCEnvBuildResult *result = [[HCEnvBuildResult alloc] init];
     result.isolation = config.isolation ?: @"";
+    if (config.customBaseURL.length > 0) {
+        result.displayName = @"自定义";
+        result.baseURL = config.customBaseURL;
+        return result;
+    }
+
     if (config.envType == HCEnvTypeRelease) {
         result.displayName = @"线上";
         result.baseURL = kHCEnvKitReleaseBaseURL;
         return result;
     }
 
-    NSString *version = config.version.length > 0 ? config.version : @"v1";
+    NSString *version = config.version ?: @"";
+    BOOL hasVersion = version.length > 0;
     if (config.envType == HCEnvTypeUat) {
         result.displayName = [NSString stringWithFormat:@"uat-%ld", (long)config.clusterIndex];
-        result.baseURL = [NSString stringWithFormat:kHCEnvKitUatTemplate, (long)config.clusterIndex, version];
+        if (hasVersion) {
+            result.baseURL = [NSString stringWithFormat:kHCEnvKitUatTemplate, (long)config.clusterIndex, version];
+        } else {
+            result.baseURL = [NSString stringWithFormat:kHCEnvKitUatTemplateNoVersion, (long)config.clusterIndex];
+        }
     } else {
         result.displayName = [NSString stringWithFormat:@"dev-%ld", (long)config.clusterIndex];
-        result.baseURL = [NSString stringWithFormat:kHCEnvKitDevTemplate, (long)config.clusterIndex, version];
+        if (hasVersion) {
+            result.baseURL = [NSString stringWithFormat:kHCEnvKitDevTemplate, (long)config.clusterIndex, version];
+        } else {
+            result.baseURL = [NSString stringWithFormat:kHCEnvKitDevTemplateNoVersion, (long)config.clusterIndex];
+        }
     }
     return result;
 }
