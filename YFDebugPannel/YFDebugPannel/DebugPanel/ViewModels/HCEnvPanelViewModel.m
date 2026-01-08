@@ -6,6 +6,7 @@
 #import "HCPresentationRequest.h"
 #import "DependencyEngine.h"
 #import "HCValueHelpers.h"
+#import <UIKit/UIKit.h>
 
 @interface HCEnvPanelViewModel ()
 @property (nonatomic, copy) NSArray<HCEnvSection *> *sections;
