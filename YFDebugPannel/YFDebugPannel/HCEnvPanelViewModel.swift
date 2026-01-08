@@ -8,7 +8,8 @@ final class HCEnvPanelViewModel {
 
     init() {
         let envSection = HCEnvBuilder.buildEnvSection()
-        self.sections = [envSection]
+        let configSection = HCEnvBuilder.buildConfigSeciton()
+        self.sections = [envSection, configSection]
         self.dependencyEngine = DependencyEngine(items: envSection.items)
         self.indexMap = [:]
         loadPersistedValues()

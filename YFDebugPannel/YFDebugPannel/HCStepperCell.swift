@@ -11,11 +11,12 @@ final class HCStepperCell: UITableViewCell {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         stepper.addTarget(self, action: #selector(stepperChanged(_:)), for: .valueChanged)
         valueLabel.textAlignment = .right
+        valueLabel.textColor = .red
         valueLabel.setContentHuggingPriority(.required, for: .horizontal)
         valueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         stackView.axis = .horizontal
         stackView.spacing = 8
-        stackView.alignment = .center
+        stackView.alignment = .trailing
         stackView.addArrangedSubview(valueLabel)
         stackView.addArrangedSubview(stepper)
         valueLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true

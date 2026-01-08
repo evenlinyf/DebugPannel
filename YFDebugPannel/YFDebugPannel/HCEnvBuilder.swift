@@ -7,6 +7,8 @@ let HCEnvItemIdIsolation = "env.isolation"
 let HCEnvItemIdVersion = "env.version"
 let HCEnvItemIdResult = "env.result"
 
+let HCEnvItemIdElb = "config.elb"
+
 private let envItemStoreIsolation = "HCEnvKit.isolation"
 private let envItemStoreVersion = "HCEnvKit.version"
 private let envItemStoreCluster = "HCEnvKit.cluster"
@@ -138,5 +140,16 @@ enum HCEnvBuilder {
             itemsById[item.identifier] = item
         }
         return itemsById
+    }
+    
+    static func buildConfigSeciton() -> HCEnvSection {
+        let elb = HCCellItem.item(identifier: HCEnvItemIdElb, title: "ELB 开关", type: .toggle)
+        elb.storeKey = "elbconfig"
+        elb.defaultValue = true;
+        elb.detail = "如果不需要获取动态域名， 请关闭开关"
+        
+        let items = [elb]
+        let section = HCEnvSection.section(title: "配置", items: items)
+        return section
     }
 }
