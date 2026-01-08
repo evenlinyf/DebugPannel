@@ -31,10 +31,12 @@ final class DependencyEngine {
             let oldEnabled = item.enabled
             let oldDetail = item.detail
             let oldValue = item.value
+            let oldDesc = item.desc
             recompute(item, itemsById)
             let valueChanged = oldEnabled != item.enabled
                 || !valueEqual(oldDetail, item.detail)
                 || !valueEqual(oldValue, item.value)
+                || !valueEqual(oldDesc, item.desc)
             if valueChanged {
                 changed.insert(currentId)
                 queue.append(contentsOf: reverseDeps[currentId] ?? [])
