@@ -144,34 +144,11 @@
 
 - (void)persistEnvConfig {
     NSDictionary<NSString *, HCCellItem *> *itemsById = self.dependencyEngine.itemsById;
-    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
-    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
-    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
-    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
-    if (!envItem || !clusterItem || !isolationItem || !versionItem || !resultItem) {
+    if (itemsById.count == 0) {
         return;
     }
 
-    HCEnvConfig *config = [[HCEnvConfig alloc] init];
-    config.envType = HCIntValue(envItem.value);
-    config.clusterIndex = HCIntValue(clusterItem.value);
-    config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
-    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
-    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
-    HCEnvConfig *autoConfig = [[HCEnvConfig alloc] init];
-    autoConfig.envType = config.envType;
-    autoConfig.clusterIndex = config.clusterIndex;
-    autoConfig.isolation = config.isolation;
-    autoConfig.version = config.version;
-    autoConfig.customBaseURL = @"";
-    HCEnvBuildResult *autoBuild = [HCEnvKit buildResult:autoConfig];
-    NSString *autoBaseURL = autoBuild.baseURL ?: @"";
-    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
-        config.customBaseURL = resultValue;
-    } else {
-        config.customBaseURL = @"";
-    }
+    HCEnvConfig *config = [HCEnvBuilder configFromItems:itemsById];
     [HCEnvKit saveConfig:config];
 }
 

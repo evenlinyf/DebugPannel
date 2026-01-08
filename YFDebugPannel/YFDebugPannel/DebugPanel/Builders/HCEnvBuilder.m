@@ -32,27 +32,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
-static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *itemsById) {
-    HCEnvConfig *config = [[HCEnvConfig alloc] init];
-    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
-    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
-    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
-    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
-    config.envType = HCIntValue(envItem.value);
-    config.clusterIndex = MAX(kEnvClusterMin, HCIntValue(clusterItem.value));
-    config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
-    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
-    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
-    NSString *autoBaseURL = autoBaseURLForConfig(config);
-    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
-        config.customBaseURL = resultValue;
-    } else {
-        config.customBaseURL = @"";
-    }
-    return config;
-}
-
 /// 创建时间：2025/03/01
 /// 创建人：Codex
 /// 用途：环境配置区块的构建类。
@@ -159,7 +138,7 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
     result.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdVersion, HCEnvItemIdIsolation];
     result.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCEnvConfig *config = configFromItems(itemsById);
+        HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
         NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         NSString *previousAuto = [item.desc isKindOfClass:[NSString class]] ? item.desc : @"";
@@ -183,6 +162,29 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     }
 
     return section;
+}
+
++ (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, HCCellItem *> *)itemsById {
+    HCEnvConfig *config = [[HCEnvConfig alloc] init];
+    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
+    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
+    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
+    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
+    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
+    config.envType = HCIntValue(envItem.value);
+    NSInteger clusterValue = MAX(kEnvClusterMin, HCIntValue(clusterItem.value));
+    clusterValue = MIN(kEnvClusterMax, clusterValue);
+    config.clusterIndex = clusterValue;
+    config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
+    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
+    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
+    NSString *autoBaseURL = autoBaseURLForConfig(config);
+    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
+        config.customBaseURL = resultValue;
+    } else {
+        config.customBaseURL = @"";
+    }
+    return config;
 }
 
 + (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSection:(HCEnvSection *)section {
