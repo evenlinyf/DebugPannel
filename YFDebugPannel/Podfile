@@ -1,5 +1,5 @@
 platform :ios, "12.0"
 
 target "YFDebugPannel" do
-  pod "EnvKit", :path => "."
+  pod "HCEnvKit", :path => "HCEnvKit"
 end
