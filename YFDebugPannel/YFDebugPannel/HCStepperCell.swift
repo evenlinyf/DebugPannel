@@ -5,16 +5,21 @@ final class HCStepperCell: UITableViewCell {
 
     private let stepper = UIStepper()
     private let valueLabel = UILabel()
+    private let stackView = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         stepper.addTarget(self, action: #selector(stepperChanged(_:)), for: .valueChanged)
-        valueLabel.frame = CGRect(x: 0, y: 0, width: 40, height: 24)
         valueLabel.textAlignment = .right
-        let stack = UIStackView(arrangedSubviews: [valueLabel, stepper])
-        stack.axis = .horizontal
-        stack.spacing = 8
-        accessoryView = stack
+        valueLabel.setContentHuggingPriority(.required, for: .horizontal)
+        valueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .center
+        stackView.addArrangedSubview(valueLabel)
+        stackView.addArrangedSubview(stepper)
+        valueLabel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        accessoryView = stackView
         selectionStyle = .none
     }
 
