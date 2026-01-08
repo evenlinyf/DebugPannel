@@ -9,6 +9,7 @@
 #import "HCSegmentCell.h"
 #import "HCSwitchCell.h"
 #import "HCStepperCell.h"
+#import "HCAlertPresenter.h"
 
 @interface HCEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -68,16 +69,12 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 }
 
 - (void)presentStringInputForItem:(HCCellItem *)item {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:item.title message:item.desc preferredStyle:UIAlertControllerStyleAlert];
-    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        if (item.value) {
-            textField.text = [NSString stringWithFormat:@"%@", item.value];
-        }
-    }];
-    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
     __weak typeof(self) weakSelf = self;
-    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
-        NSString *text = alert.textFields.firstObject.text ?: @"";
+    NSString *initialText = item.value ? [NSString stringWithFormat:@"%@", item.value] : @"";
+    UIAlertController *alert = [HCAlertPresenter textInputAlertWithTitle:item.title
+                                                                 message:item.desc
+                                                             initialText:initialText
+                                                          confirmHandler:^(NSString *text) {
         if (item.validator) {
             NSString *errorMessage = item.validator(text);
             if (errorMessage.length > 0) {
@@ -86,23 +83,19 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             }
         }
         [weakSelf applyValue:text forItem:item];
-    }]];
+    }];
     [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)presentPickerForItem:(HCCellItem *)item {
-    UIAlertController *sheet = [UIAlertController alertControllerWithTitle:item.title message:item.desc preferredStyle:UIAlertControllerStyleActionSheet];
     __weak typeof(self) weakSelf = self;
-    for (NSString *option in item.options ?: @[]) {
-        [sheet addAction:[UIAlertAction actionWithTitle:option style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
-            [weakSelf applyValue:option forItem:item];
-        }]];
-    }
-    [sheet addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
-    if (sheet.popoverPresentationController) {
-        sheet.popoverPresentationController.sourceView = self.view;
-        sheet.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 1, 1);
-    }
+    UIAlertController *sheet = [HCAlertPresenter actionSheetWithTitle:item.title
+                                                              message:item.desc
+                                                              options:item.options ?: @[]
+                                                           sourceView:self.view
+                                                     selectionHandler:^(NSString *option) {
+        [weakSelf applyValue:option forItem:item];
+    }];
     [self presentViewController:sheet animated:YES completion:nil];
 }
 
@@ -110,12 +103,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     if (request.type != HCPresentationTypeToast) {
         return;
     }
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:request.title preferredStyle:UIAlertControllerStyleAlert];
-    [self presentViewController:alert animated:YES completion:^{
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [alert dismissViewControllerAnimated:YES completion:nil];
-        });
-    }];
+    [HCAlertPresenter presentToastFrom:self message:request.title duration:1.0];
 }
 
 #pragma mark - UITableViewDataSource

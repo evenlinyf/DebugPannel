@@ -48,7 +48,9 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
     NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
     NSString *autoBaseURL = autoBaseURLForConfig(config);
-    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
+    if (config.envType == HCEnvTypeRelease) {
+        config.customBaseURL = @"";
+    } else if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
         config.customBaseURL = resultValue;
     } else {
         config.customBaseURL = @"";
@@ -157,23 +159,25 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"生效结果" type:HCCellItemTypeEditableInfo];
+    HCCellItem *result = [HCCellItem itemWithIdentifier:HCEnvItemIdResult title:@"Final URL" type:HCCellItemTypeEditableInfo];
     result.storeKey = kEnvItemStoreResult;
     result.defaultValue = @"";
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
     result.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdVersion, HCEnvItemIdIsolation];
+    result.disabledHint = @"线上环境不支持自定义 Final URL";
     result.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
         NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         NSString *previousAuto = [item.desc isKindOfClass:[NSString class]] ? item.desc : @"";
-        if (current.length == 0 || [current isEqualToString:previousAuto]) {
+        BOOL isRelease = (config.envType == HCEnvTypeRelease);
+        item.enabled = !isRelease;
+        if (isRelease || current.length == 0 || [current isEqualToString:previousAuto]) {
             item.value = autoBaseURL;
         }
         item.desc = autoBaseURL;
-        HCEnvBuildResult *build = [HCEnvKit buildResult:config];
-        item.title = [NSString stringWithFormat:@"生效结果 (%@)", build.displayName ?: @""];
+        item.title = @"Final URL";
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
@@ -205,7 +209,9 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
     NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
     NSString *autoBaseURL = autoBaseURLForConfig(config);
-    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
+    if (config.envType == HCEnvTypeRelease) {
+        config.customBaseURL = @"";
+    } else if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
         config.customBaseURL = resultValue;
     } else {
         config.customBaseURL = @"";
