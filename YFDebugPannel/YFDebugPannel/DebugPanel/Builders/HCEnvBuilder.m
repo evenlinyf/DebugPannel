@@ -17,7 +17,7 @@ static NSString *const kEnvItemStoreVersion = @"HCEnvKit.version";
 static NSString *const kEnvItemStoreCluster = @"HCEnvKit.cluster";
 static NSString *const kEnvItemStoreSaas = @"HCEnvKit.saas";
 static NSInteger const kEnvClusterMin = 1;
-static NSInteger const kEnvClusterMax = 5;
+static NSInteger const kEnvClusterMax = 20;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
 
 static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *itemsById) {

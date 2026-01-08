@@ -23,9 +23,10 @@
         [_valueLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 
         _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_valueLabel, _stepper]];
+        _stackView.frame = CGRectMake(0, 0, 200, 44);
         _stackView.axis = UILayoutConstraintAxisHorizontal;
         _stackView.spacing = 8;
-        _stackView.alignment = UIStackViewAlignmentTrailing;
+        _stackView.alignment = UIStackViewAlignmentFill;
         [_valueLabel.widthAnchor constraintEqualToConstant:40].active = YES;
 
         self.accessoryView = _stackView;
