@@ -5,6 +5,7 @@
 
 @class HCEnvSection;
 @class HCCellItem;
+@class HCEnvConfig;
 
 FOUNDATION_EXPORT NSString *const HCEnvItemIdEnvType;
 FOUNDATION_EXPORT NSString *const HCEnvItemIdCluster;
@@ -24,4 +25,6 @@ FOUNDATION_EXPORT NSString *const HCEnvItemIdElb;
 + (HCEnvSection *)buildConfigSeciton;
 /// 根据 section 建立 item 索引。
 + (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSection:(HCEnvSection *)section;
+/// 根据 item 映射构建环境配置。
++ (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, HCCellItem *> *)itemsById;
 @end

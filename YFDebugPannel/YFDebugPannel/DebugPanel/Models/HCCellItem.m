@@ -16,6 +16,8 @@
         _title = [title copy];
         _type = type;
         _enabled = YES;
+        _stepperMin = 0;
+        _stepperMax = 100;
     }
     return self;
 }

@@ -62,7 +62,6 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
     };
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:payload forKey:kHCEnvKitDefaultsKey];
-    [defaults synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:HCEnvKitConfigDidChangeNotification object:nil];
 }
 
