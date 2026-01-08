@@ -27,6 +27,9 @@ typedef void (^HCCellItemValueTransformer)(HCCellItem *item);
 @property (nonatomic, assign) HCCellItemType type;
 @property (nonatomic, strong) id value;
 
+@property (nonatomic, assign) NSInteger stepperMin;
+@property (nonatomic, assign) NSInteger stepperMax;
+
 @property (nonatomic, copy) NSString *storeKey;
 @property (nonatomic, strong) id defaultValue;
 
