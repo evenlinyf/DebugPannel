@@ -11,8 +11,14 @@ FOUNDATION_EXPORT NSString *const HCEnvItemIdVersion;
 FOUNDATION_EXPORT NSString *const HCEnvItemIdResult;
 FOUNDATION_EXPORT NSString *const HCEnvItemIdElb;
 
+/// 创建时间：2025/03/01
+/// 创建人：Codex
+/// 用途：构建环境配置面板的 section 与 item。
 @interface HCEnvBuilder : NSObject
+/// 构建环境配置区块。
 + (HCEnvSection *)buildEnvSection;
+/// 构建配置区块。
 + (HCEnvSection *)buildConfigSeciton;
+/// 根据 section 建立 item 索引。
 + (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSection:(HCEnvSection *)section;
 @end

@@ -8,9 +8,15 @@
 #import "HCValueHelpers.h"
 #import <UIKit/UIKit.h>
 
+/// 创建时间：2025/03/01
+/// 创建人：Codex
+/// 用途：环境面板 ViewModel 的私有状态。
 @interface HCEnvPanelViewModel ()
+/// 内部持有的 section 列表（可写）。
 @property (nonatomic, copy) NSArray<HCEnvSection *> *sections;
+/// 依赖引擎，用于触发联动刷新。
 @property (nonatomic, strong) DependencyEngine *dependencyEngine;
+/// itemId 到 indexPath 的缓存映射。
 @property (nonatomic, copy) NSDictionary<NSString *, NSIndexPath *> *indexMap;
 @end
 
@@ -142,7 +148,8 @@
     HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
     HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
     HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
-    if (!envItem || !clusterItem || !isolationItem || !versionItem) {
+    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
+    if (!envItem || !clusterItem || !isolationItem || !versionItem || !resultItem) {
         return;
     }
 
@@ -151,6 +158,20 @@
     config.clusterIndex = HCIntValue(clusterItem.value);
     config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
     config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
+    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
+    HCEnvConfig *autoConfig = [[HCEnvConfig alloc] init];
+    autoConfig.envType = config.envType;
+    autoConfig.clusterIndex = config.clusterIndex;
+    autoConfig.isolation = config.isolation;
+    autoConfig.version = config.version;
+    autoConfig.customBaseURL = @"";
+    HCEnvBuildResult *autoBuild = [HCEnvKit buildResult:autoConfig];
+    NSString *autoBaseURL = autoBuild.baseURL ?: @"";
+    if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
+        config.customBaseURL = resultValue;
+    } else {
+        config.customBaseURL = @"";
+    }
     [HCEnvKit saveConfig:config];
 }
 
