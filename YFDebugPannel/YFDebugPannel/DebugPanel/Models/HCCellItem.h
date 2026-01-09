@@ -3,6 +3,8 @@
 /// 用途：调试面板通用 cell 数据模型定义。
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSInteger, HCCellItemType) {
     HCCellItemTypeToggle,
     HCCellItemTypeString,
@@ -47,3 +49,6 @@ typedef void (^HCCellItemValueTransformer)(HCCellItem *item);
 - (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type;
 + (instancetype)itemWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type;
 @end
+
+
+NS_ASSUME_NONNULL_END

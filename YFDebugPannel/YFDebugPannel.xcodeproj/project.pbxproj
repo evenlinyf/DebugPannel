@@ -6,26 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E5A76DF72F0E900000B94B11 /* YFDebugPannel/App/AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF02F0E900000B94B11 /* YFDebugPannel/App/AppDelegate.m */; };
+		E5A76DF82F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF12F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m */; };
+		E5A76DF92F0E900000B94B11 /* YFDebugPannel/App/ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF22F0E900000B94B11 /* YFDebugPannel/App/ViewController.m */; };
+		E5A76DFA2F0E900000B94B11 /* YFDebugPannel/App/main.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF32F0E900000B94B11 /* YFDebugPannel/App/main.m */; };
+		E5A76DFB2F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF42F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard */; };
+		E5A76DFC2F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF52F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard */; };
+		E5A76DFD2F0E900000B94B11 /* YFDebugPannel/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF62F0E900000B94B11 /* YFDebugPannel/Assets.xcassets */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E5A76DCD2F0E810E00B94B11 /* YFDebugPannel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YFDebugPannel.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5A76DF02F0E900000B94B11 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/AppDelegate.m; sourceTree = SOURCE_ROOT; };
-		E5A76DF12F0E900000B94B11 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/SceneDelegate.m; sourceTree = SOURCE_ROOT; };
-		E5A76DF22F0E900000B94B11 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/ViewController.m; sourceTree = SOURCE_ROOT; };
-		E5A76DF32F0E900000B94B11 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/main.m; sourceTree = SOURCE_ROOT; };
-		E5A76DF42F0E900000B94B11 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
-		E5A76DF52F0E900000B94B11 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
-		E5A76DF62F0E900000B94B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = YFDebugPannel/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		E5A76DF02F0E900000B94B11 /* YFDebugPannel/App/AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/AppDelegate.m; sourceTree = SOURCE_ROOT; };
+		E5A76DF12F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/SceneDelegate.m; sourceTree = SOURCE_ROOT; };
+		E5A76DF22F0E900000B94B11 /* YFDebugPannel/App/ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/ViewController.m; sourceTree = SOURCE_ROOT; };
+		E5A76DF32F0E900000B94B11 /* YFDebugPannel/App/main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannel/App/main.m; sourceTree = SOURCE_ROOT; };
+		E5A76DF42F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
+		E5A76DF52F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
+		E5A76DF62F0E900000B94B11 /* YFDebugPannel/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = YFDebugPannel/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
-/* Begin PBXBuildFile section */
-		E5A76DF72F0E900000B94B11 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF02F0E900000B94B11 /* AppDelegate.m */; };
-		E5A76DF82F0E900000B94B11 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF12F0E900000B94B11 /* SceneDelegate.m */; };
-		E5A76DF92F0E900000B94B11 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF22F0E900000B94B11 /* ViewController.m */; };
-		E5A76DFA2F0E900000B94B11 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76DF32F0E900000B94B11 /* main.m */; };
-		E5A76DFB2F0E900000B94B11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF42F0E900000B94B11 /* Main.storyboard */; };
-		E5A76DFC2F0E900000B94B11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF52F0E900000B94B11 /* LaunchScreen.storyboard */; };
-		E5A76DFD2F0E900000B94B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF62F0E900000B94B11 /* Assets.xcassets */; };
-/* End PBXBuildFile section */
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		E5A76DDF2F0E811000B94B11 /* Exceptions for "YFDebugPannel" folder in "YFDebugPannel" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -63,6 +64,7 @@
 			children = (
 				E5A76DCF2F0E810E00B94B11 /* YFDebugPannel */,
 				E5A76DCE2F0E810E00B94B11 /* Products */,
+				E5A76E6A2F0F583000B94B11 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -72,6 +74,20 @@
 				E5A76DCD2F0E810E00B94B11 /* YFDebugPannel.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E5A76E6A2F0F583000B94B11 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E5A76DF02F0E900000B94B11 /* YFDebugPannel/App/AppDelegate.m */,
+				E5A76DF12F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m */,
+				E5A76DF22F0E900000B94B11 /* YFDebugPannel/App/ViewController.m */,
+				E5A76DF32F0E900000B94B11 /* YFDebugPannel/App/main.m */,
+				E5A76DF42F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard */,
+				E5A76DF52F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard */,
+				E5A76DF62F0E900000B94B11 /* YFDebugPannel/Assets.xcassets */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,9 +154,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5A76DFB2F0E900000B94B11 /* Main.storyboard in Resources */,
-				E5A76DFC2F0E900000B94B11 /* LaunchScreen.storyboard in Resources */,
-				E5A76DFD2F0E900000B94B11 /* Assets.xcassets in Resources */,
+				E5A76DFB2F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard in Resources */,
+				E5A76DFC2F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard in Resources */,
+				E5A76DFD2F0E900000B94B11 /* YFDebugPannel/Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,10 +167,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5A76DF72F0E900000B94B11 /* AppDelegate.m in Sources */,
-				E5A76DF82F0E900000B94B11 /* SceneDelegate.m in Sources */,
-				E5A76DF92F0E900000B94B11 /* ViewController.m in Sources */,
-				E5A76DFA2F0E900000B94B11 /* main.m in Sources */,
+				E5A76DF72F0E900000B94B11 /* YFDebugPannel/App/AppDelegate.m in Sources */,
+				E5A76DF82F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m in Sources */,
+				E5A76DF92F0E900000B94B11 /* YFDebugPannel/App/ViewController.m in Sources */,
+				E5A76DFA2F0E900000B94B11 /* YFDebugPannel/App/main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +184,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YFDebugPannel/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -175,6 +192,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -199,6 +217,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YFDebugPannel/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -206,6 +225,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

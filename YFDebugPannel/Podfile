@@ -1,5 +1,0 @@
-platform :ios, "12.0"
-
-target "YFDebugPannel" do
-  pod "HCEnvKit", :path => "HCEnvKit"
-end

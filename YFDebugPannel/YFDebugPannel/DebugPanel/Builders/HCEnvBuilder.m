@@ -35,29 +35,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
-static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *itemsById) {
-    HCEnvConfig *config = [[HCEnvConfig alloc] init];
-    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
-    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
-    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
-    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
-    config.envType = HCIntValue(envItem.value);
-    config.clusterIndex = MAX(kEnvClusterMin, HCIntValue(clusterItem.value));
-    config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
-    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
-    NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
-    NSString *autoBaseURL = autoBaseURLForConfig(config);
-    if (config.envType == HCEnvTypeRelease) {
-        config.customBaseURL = @"";
-    } else if (resultValue.length > 0 && ![resultValue isEqualToString:autoBaseURL]) {
-        config.customBaseURL = resultValue;
-    } else {
-        config.customBaseURL = @"";
-    }
-    return config;
-}
-
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置区块的构建类。
@@ -72,7 +49,7 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     HCEnvConfig *config = [HCEnvKit currentConfig];
 
     HCCellItem *envType = [HCCellItem itemWithIdentifier:HCEnvItemIdEnvType title:@"环境类型" type:HCCellItemTypeSegment];
-    envType.options = @[@"线上", @"uat", @"dev"];
+    envType.options = @[@"线上", @"uat", @"dev", @"自定义"];
     envType.value = @(config.envType);
 
     HCCellItem *cluster = [HCCellItem itemWithIdentifier:HCEnvItemIdCluster title:@"环境编号" type:HCCellItemTypeStepper];
@@ -165,14 +142,15 @@ static HCEnvConfig *configFromItems(NSDictionary<NSString *, HCCellItem *> *item
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
     result.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdVersion, HCEnvItemIdIsolation];
-    result.disabledHint = @"线上环境不支持自定义 Final URL";
+//    result.disabledHint = @"线上环境不支持自定义 Final URL";
     result.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
         NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         NSString *previousAuto = [item.desc isKindOfClass:[NSString class]] ? item.desc : @"";
-        BOOL isRelease = (config.envType == HCEnvTypeRelease);
-        item.enabled = !isRelease;
+        BOOL isCustom = (config.envType == HCEnvTypeCustom);
+        BOOL isRelease = config.envType == HCEnvTypeRelease;
+        item.enabled = isCustom;
         if (isRelease || current.length == 0 || [current isEqualToString:previousAuto]) {
             item.value = autoBaseURL;
         }

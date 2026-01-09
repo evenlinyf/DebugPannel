@@ -12,7 +12,9 @@ typedef NS_ENUM(NSInteger, HCEnvType) {
     /// UAT 环境。
     HCEnvTypeUat,
     /// DEV 环境。
-    HCEnvTypeDev
+    HCEnvTypeDev,
+    /// 自定义环境
+    HCEnvTypeCustom,
 };
 
 FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
