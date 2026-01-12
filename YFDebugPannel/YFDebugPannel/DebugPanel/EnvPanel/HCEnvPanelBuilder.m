@@ -1,10 +1,12 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
-/// 用途：环境配置区块构建器实现。
-#import "HCEnvBuilder.h"
+/// 用途：环境面板 Builder 实现。
+#import "HCEnvPanelBuilder.h"
+
 #import "HCEnvKit.h"
-#import "HCCellItem.h"
+#import "HCEnvPanelViewController.h"
 #import "HCEnvSection.h"
+#import "HCCellItem.h"
 #import "HCValueHelpers.h"
 
 NSString *const HCEnvItemIdEnvType = @"env.type";
@@ -35,10 +37,45 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
-/// 创建时间：2026/01/08
-/// 创建人：Codex
-/// 用途：环境配置区块的构建类。
-@implementation HCEnvBuilder
+@implementation HCEnvPanelBuilder
+
++ (NSArray<HCEnvSection *> *)buildSections {
+    HCEnvSection *envSection = [self buildEnvSection];
+    HCEnvSection *configSection = [self buildConfigSection];
+    return @[envSection, configSection];
+}
+
++ (UIViewController *)buildPanelViewController {
+    return [[HCEnvPanelViewController alloc] init];
+}
+
++ (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSections:(NSArray<HCEnvSection *> *)sections {
+    NSMutableDictionary<NSString *, HCCellItem *> *itemsById = [NSMutableDictionary dictionary];
+    for (HCEnvSection *section in sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.identifier.length > 0) {
+                itemsById[item.identifier] = item;
+            }
+        }
+    }
+    return [itemsById copy];
+}
+
++ (void)refreshSections:(NSArray<HCEnvSection *> *)sections {
+    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    for (HCEnvSection *section in sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.recomputeBlock) {
+                item.recomputeBlock(item, itemsById);
+            }
+        }
+    }
+}
+
++ (HCEnvConfig *)configFromSections:(NSArray<HCEnvSection *> *)sections {
+    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    return [self configFromItems:itemsById];
+}
 
 /// 如何新增配置项（重要）：
 /// 1. 在本文件顶部新增常量标识（如 HCEnvItemIdXXX）与持久化 key（如 kEnvItemStoreXXX）。
@@ -142,7 +179,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
     result.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdVersion, HCEnvItemIdIsolation];
-//    result.disabledHint = @"线上环境不支持自定义 Final URL";
     result.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
@@ -162,7 +198,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result];
     HCEnvSection *section = [HCEnvSection sectionWithTitle:@"环境配置" items:items];
 
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSection:section];
+    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
     for (HCCellItem *item in items) {
         if (item.recomputeBlock) {
             item.recomputeBlock(item, itemsById);
@@ -170,6 +206,16 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     }
 
     return section;
+}
+
++ (HCEnvSection *)buildConfigSection {
+    HCCellItem *elb = [HCCellItem itemWithIdentifier:HCEnvItemIdElb title:@"ELB 开关" type:HCCellItemTypeToggle];
+    elb.storeKey = @"elbconfig";
+    elb.defaultValue = @(YES);
+    elb.detail = @"如果不需要获取动态域名， 请关闭开关";
+
+    NSArray<HCCellItem *> *items = @[elb];
+    return [HCEnvSection sectionWithTitle:@"配置" items:items];
 }
 
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, HCCellItem *> *)itemsById {
@@ -195,26 +241,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         config.customBaseURL = @"";
     }
     return config;
-}
-
-+ (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSection:(HCEnvSection *)section {
-    NSMutableDictionary<NSString *, HCCellItem *> *itemsById = [NSMutableDictionary dictionary];
-    for (HCCellItem *item in section.items) {
-        if (item.identifier.length > 0) {
-            itemsById[item.identifier] = item;
-        }
-    }
-    return [itemsById copy];
-}
-
-+ (HCEnvSection *)buildConfigSeciton {
-    HCCellItem *elb = [HCCellItem itemWithIdentifier:HCEnvItemIdElb title:@"ELB 开关" type:HCCellItemTypeToggle];
-    elb.storeKey = @"elbconfig";
-    elb.defaultValue = @(YES);
-    elb.detail = @"如果不需要获取动态域名， 请关闭开关";
-
-    NSArray<HCCellItem *> *items = @[elb];
-    return [HCEnvSection sectionWithTitle:@"配置" items:items];
 }
 
 @end

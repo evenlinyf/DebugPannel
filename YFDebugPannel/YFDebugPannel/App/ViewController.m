@@ -1,5 +1,5 @@
 #import "ViewController.h"
-#import "HCEnvPanelViewController.h"
+#import "HCEnvPanelBuilder.h"
 #import "DebugPanelInfo.h"
 
 @interface ViewController ()
@@ -38,7 +38,7 @@
 }
 
 - (void)openDebugPanel {
-    HCEnvPanelViewController *controller = [[HCEnvPanelViewController alloc] init];
+    UIViewController *controller = [HCEnvPanelBuilder buildPanelViewController];
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];
 }
