@@ -32,6 +32,23 @@ static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
     return [NSString stringWithFormat:@"%@.%ld", baseKey, (long)envType];
 }
 
+static BOOL configStringsEqual(NSString *lhs, NSString *rhs) {
+    NSString *left = lhs ?: @"";
+    NSString *right = rhs ?: @"";
+    return [left isEqualToString:right];
+}
+
+static BOOL configEquals(HCEnvConfig *left, HCEnvConfig *right) {
+    if (!left || !right) {
+        return NO;
+    }
+    return left.envType == right.envType
+        && left.clusterIndex == right.clusterIndex
+        && configStringsEqual(left.isolation, right.isolation)
+        && configStringsEqual(left.version, right.version)
+        && configStringsEqual(left.customBaseURL, right.customBaseURL);
+}
+
 static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     HCEnvConfig *autoConfig = [[HCEnvConfig alloc] init];
     autoConfig.envType = config.envType;
@@ -262,9 +279,11 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     HCCellItem *save = [HCCellItem actionItemWithIdentifier:HCEnvItemIdSave title:@"保存环境" handler:nil];
     save.dependsOn = @[HCEnvItemIdEnvType];
     save.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        item.hidden = (envItem.value == nil);
-        item.enabled = YES;
+        HCEnvConfig *currentConfig = [HCEnvKit currentConfig];
+        HCEnvConfig *pendingConfig = [self configFromItems:itemsById];
+        BOOL changed = !configEquals(currentConfig, pendingConfig);
+        item.hidden = !changed;
+        item.enabled = changed;
     };
 
     NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
