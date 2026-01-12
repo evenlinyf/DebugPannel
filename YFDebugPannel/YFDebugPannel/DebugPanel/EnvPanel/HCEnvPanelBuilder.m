@@ -8,6 +8,8 @@
 #import "HCEnvSection.h"
 #import "HCCellItem.h"
 #import "HCValueHelpers.h"
+#import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 NSString *const HCEnvItemIdEnvType = @"env.type";
 NSString *const HCEnvItemIdCluster = @"env.cluster";
@@ -15,7 +17,6 @@ NSString *const HCEnvItemIdSaas = @"env.saas";
 NSString *const HCEnvItemIdIsolation = @"env.isolation";
 NSString *const HCEnvItemIdVersion = @"env.version";
 NSString *const HCEnvItemIdResult = @"env.result";
-NSString *const HCEnvItemIdSave = @"env.save";
 NSString *const HCEnvItemIdElb = @"config.elb";
 
 static NSString *const kEnvItemStoreIsolation = @"HCEnvKit.isolation";
@@ -26,6 +27,72 @@ static NSString *const kEnvItemStoreResult = @"HCEnvKit.result";
 static NSInteger const kEnvClusterMin = 1;
 static NSInteger const kEnvClusterMax = 20;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
+static const void *kHCEnvPanelExitObserverKey = &kHCEnvPanelExitObserverKey;
+
+static UIWindow *activeWindow(void) {
+    UIApplication *application = UIApplication.sharedApplication;
+    for (UIScene *scene in application.connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+        if (scene.activationState != UISceneActivationStateForegroundActive) {
+            continue;
+        }
+        UIWindowScene *windowScene = (UIWindowScene *)scene;
+        for (UIWindow *window in windowScene.windows) {
+            if (window.isKeyWindow) {
+                return window;
+            }
+        }
+    }
+    if (application.keyWindow) {
+        return application.keyWindow;
+    }
+    return application.windows.firstObject;
+}
+
+static UIViewController *topViewController(void) {
+    UIWindow *window = activeWindow();
+    UIViewController *top = window.rootViewController;
+    while (top.presentedViewController) {
+        top = top.presentedViewController;
+    }
+    return top;
+}
+
+@interface HCEnvPanelExitObserver : NSObject
+@property (nonatomic, strong) HCEnvConfig *initialConfig;
+@end
+
+@implementation HCEnvPanelExitObserver
+
+- (instancetype)initWithInitialConfig:(HCEnvConfig *)initialConfig {
+    self = [super init];
+    if (self) {
+        _initialConfig = [initialConfig copy];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    HCEnvConfig *currentConfig = [HCEnvKit currentConfig];
+    if ([self.initialConfig isEqual:currentConfig]) {
+        return;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *presenter = topViewController();
+        if (!presenter) {
+            return;
+        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示"
+                                                                       message:@"环境已变更，重启 App 后生效"
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil]];
+        [presenter presentViewController:alert animated:YES completion:nil];
+    });
+}
+
+@end
 
 // 环境配置需要按环境类型隔离持久化 key。
 static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
@@ -52,7 +119,10 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
 }
 
 + (UIViewController *)buildPanelViewController {
-    return [[HCEnvPanelViewController alloc] init];
+    HCEnvPanelViewController *controller = [[HCEnvPanelViewController alloc] init];
+    HCEnvPanelExitObserver *observer = [[HCEnvPanelExitObserver alloc] initWithInitialConfig:[HCEnvKit currentConfig]];
+    objc_setAssociatedObject(controller, kHCEnvPanelExitObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return controller;
 }
 
 + (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSections:(NSArray<HCEnvSection *> *)sections {
@@ -259,15 +329,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    HCCellItem *save = [HCCellItem actionItemWithIdentifier:HCEnvItemIdSave title:@"保存环境" handler:nil];
-    save.dependsOn = @[HCEnvItemIdEnvType];
-    save.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        item.hidden = (envItem.value == nil);
-        item.enabled = YES;
-    };
-
-    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
+    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result];
     HCEnvSection *section = [HCEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];

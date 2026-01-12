@@ -8,8 +8,6 @@
 @class HCEnvSection;
 @class UIViewController;
 
-FOUNDATION_EXPORT NSString *const HCEnvItemIdSave;
-
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：构建 DebugPannel 页面所需的区块与配置能力。
