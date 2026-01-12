@@ -22,7 +22,7 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：保存环境配置的实体，供构建生效结果与持久化使用。
-@interface HCEnvConfig : NSObject
+@interface HCEnvConfig : NSObject <NSCopying>
 /// 当前环境类型（线上、UAT、DEV）。
 @property (nonatomic, assign) HCEnvType envType;
 /// 环境编号（集群编号），用于拼接 UAT/DEV 域名。

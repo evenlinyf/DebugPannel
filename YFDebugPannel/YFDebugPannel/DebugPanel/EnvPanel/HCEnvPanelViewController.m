@@ -301,10 +301,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [self presentPickerForItem:item];
             break;
         case HCCellItemTypeAction:
-            if ([item.identifier isEqualToString:HCEnvItemIdSave]) {
-                [self persistEnvConfig];
-                [self presentRequest:[HCPresentationRequest toastWithMessage:@"环境已保存"]];
-            } else if (item.actionHandler) {
+            if (item.actionHandler) {
                 item.actionHandler(item);
             } else {
                 [self applyValue:item.value forItem:item];

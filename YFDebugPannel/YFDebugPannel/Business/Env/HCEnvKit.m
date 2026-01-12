@@ -7,6 +7,13 @@ NSNotificationName const HCEnvKitConfigDidChangeNotification = @"HCEnvKitConfigD
 
 @implementation HCEnvConfig
 
+static NSString *HCNormalizedString(NSString *value) {
+    if (![value isKindOfClass:[NSString class]]) {
+        return @"";
+    }
+    return value ?: @"";
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -17,6 +24,42 @@ NSNotificationName const HCEnvKitConfigDidChangeNotification = @"HCEnvKitConfigD
         _customBaseURL = @"";
     }
     return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    HCEnvConfig *copy = [[[self class] allocWithZone:zone] init];
+    copy.envType = self.envType;
+    copy.clusterIndex = self.clusterIndex;
+    copy.isolation = HCNormalizedString(self.isolation);
+    copy.version = HCNormalizedString(self.version);
+    copy.customBaseURL = HCNormalizedString(self.customBaseURL);
+    return copy;
+}
+
+- (BOOL)isEqual:(id)object {
+    if (self == object) {
+        return YES;
+    }
+    if (![object isKindOfClass:[HCEnvConfig class]]) {
+        return NO;
+    }
+    HCEnvConfig *other = (HCEnvConfig *)object;
+    BOOL envTypeEqual = (self.envType == other.envType);
+    BOOL clusterEqual = (self.clusterIndex == other.clusterIndex);
+    BOOL isolationEqual = [HCNormalizedString(self.isolation) isEqualToString:HCNormalizedString(other.isolation)];
+    BOOL versionEqual = [HCNormalizedString(self.version) isEqualToString:HCNormalizedString(other.version)];
+    BOOL baseURLEqual = [HCNormalizedString(self.customBaseURL) isEqualToString:HCNormalizedString(other.customBaseURL)];
+    return envTypeEqual && clusterEqual && isolationEqual && versionEqual && baseURLEqual;
+}
+
+- (NSUInteger)hash {
+    NSUInteger hashValue = 0;
+    hashValue ^= (NSUInteger)self.envType;
+    hashValue ^= (NSUInteger)self.clusterIndex;
+    hashValue ^= HCNormalizedString(self.isolation).hash;
+    hashValue ^= HCNormalizedString(self.version).hash;
+    hashValue ^= HCNormalizedString(self.customBaseURL).hash;
+    return hashValue;
 }
 
 @end
