@@ -12,7 +12,7 @@
 @implementation HCSwitchCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
+    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
     if (self) {
         _toggle = [[UISwitch alloc] init];
         [_toggle addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -24,9 +24,6 @@
 
 - (void)configureWithItem:(HCCellItem *)item {
     self.textLabel.text = item.title;
-    self.detailTextLabel.text = item.detail;
-    self.detailTextLabel.textColor = UIColor.secondaryLabelColor;
-    self.detailTextLabel.numberOfLines = 0;
     self.toggle.on = HCBoolValue(item.value);
     self.toggle.enabled = item.enabled;
 }

@@ -25,7 +25,6 @@ static NSString *const kHCStepperCellId = @"HCStepperCell";
 static NSString *const kHCValueCellId = @"HCValueCell";
 static NSString *const kHCInfoCellId = @"HCInfoCell";
 static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
-static NSString *const kHCActionCellId = @"HCActionCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -73,6 +72,7 @@ static NSString *const kHCActionCellId = @"HCActionCell";
         item.valueTransformer(item);
     }
     [self persistIfNeededForItem:item];
+    [self persistEnvConfig];
     [HCEnvPanelBuilder refreshSections:self.sections];
     [self.tableView reloadData];
 }
@@ -166,25 +166,6 @@ static NSString *const kHCActionCellId = @"HCActionCell";
     return [section.items filteredArrayUsingPredicate:predicate];
 }
 
-- (UIView *)valueAccessoryViewWithText:(NSString *)text enabled:(BOOL)enabled {
-    UILabel *label = [[UILabel alloc] init];
-    label.text = text;
-    label.font = [UIFont systemFontOfSize:15.0];
-    label.textColor = enabled ? UIColor.secondaryLabelColor : UIColor.tertiaryLabelColor;
-    label.textAlignment = NSTextAlignmentRight;
-    [label sizeToFit];
-
-    UIImage *chevronImage = [UIImage systemImageNamed:@"chevron.right"];
-    UIImageView *chevron = [[UIImageView alloc] initWithImage:chevronImage];
-    chevron.tintColor = UIColor.tertiaryLabelColor;
-
-    UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, chevron]];
-    stack.axis = UILayoutConstraintAxisHorizontal;
-    stack.alignment = UIStackViewAlignmentCenter;
-    stack.spacing = 6.0;
-    return stack;
-}
-
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -270,14 +251,13 @@ static NSString *const kHCActionCellId = @"HCActionCell";
         case HCCellItemTypeString:
         case HCCellItemTypePicker:
         case HCCellItemTypeAction: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCValueCellId];
+            if (!cell) {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kHCValueCellId];
+            }
+            cell.textLabel.text = item.title;
             if (item.type == HCCellItemTypeAction) {
-                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCActionCellId];
-                if (!cell) {
-                    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kHCActionCellId];
-                }
-                cell.textLabel.text = item.title;
                 cell.detailTextLabel.text = nil;
-                cell.accessoryView = nil;
                 cell.accessoryType = UITableViewCellAccessoryNone;
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;
                 cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
@@ -286,28 +266,18 @@ static NSString *const kHCActionCellId = @"HCActionCell";
                 cell.textLabel.textColor = UIColor.whiteColor;
                 cell.detailTextLabel.textColor = UIColor.whiteColor;
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                cell.userInteractionEnabled = YES;
-                return cell;
             } else {
-                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCValueCellId];
-                if (!cell) {
-                    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kHCValueCellId];
-                }
-                cell.textLabel.text = item.title;
-                cell.detailTextLabel.text = item.detail.length > 0 ? item.detail : nil;
-                cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
-                cell.detailTextLabel.numberOfLines = 0;
-                NSString *valueText = item.value ? [NSString stringWithFormat:@"%@", item.value] : @"";
-                cell.accessoryView = [self valueAccessoryViewWithText:valueText enabled:item.enabled];
-                cell.accessoryType = UITableViewCellAccessoryNone;
+                cell.detailTextLabel.text = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 cell.textLabel.textAlignment = NSTextAlignmentNatural;
                 cell.textLabel.font = [UIFont systemFontOfSize:17.0];
                 cell.backgroundColor = UIColor.systemBackgroundColor;
                 cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+                cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                cell.userInteractionEnabled = YES;
-                return cell;
             }
+            cell.userInteractionEnabled = YES;
+            return cell;
         }
     }
 }
@@ -334,8 +304,6 @@ static NSString *const kHCActionCellId = @"HCActionCell";
             if ([item.identifier isEqualToString:HCEnvItemIdSave]) {
                 [self persistEnvConfig];
                 [self presentRequest:[HCPresentationRequest toastWithMessage:@"环境已保存"]];
-                [HCEnvPanelBuilder refreshSections:self.sections];
-                [self.tableView reloadData];
             } else if (item.actionHandler) {
                 item.actionHandler(item);
             } else {
