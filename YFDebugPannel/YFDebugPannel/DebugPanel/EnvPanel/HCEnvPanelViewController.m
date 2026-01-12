@@ -65,7 +65,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)applyValue:(id)value forItem:(HCCellItem *)item {
     item.value = value;
-    if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
+    if (item.type == HCCellItemTypeEditableInfo) {
         item.detail = value ? [NSString stringWithFormat:@"%@", value] : nil;
     }
     if (item.valueTransformer) {
@@ -80,8 +80,9 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 - (void)presentStringInputForItem:(HCCellItem *)item {
     __weak typeof(self) weakSelf = self;
     NSString *initialText = item.value ? [NSString stringWithFormat:@"%@", item.value] : @"";
+    NSString *message = item.detail.length > 0 ? item.detail : nil;
     UIAlertController *alert = [HCAlertPresenter textInputAlertWithTitle:item.title
-                                                                 message:item.desc
+                                                                 message:message
                                                              initialText:initialText
                                                           confirmHandler:^(NSString *text) {
         if (item.validator) {
@@ -98,8 +99,9 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)presentPickerForItem:(HCCellItem *)item {
     __weak typeof(self) weakSelf = self;
+    NSString *message = item.detail.length > 0 ? item.detail : nil;
     UIAlertController *sheet = [HCAlertPresenter actionSheetWithTitle:item.title
-                                                              message:item.desc
+                                                              message:message
                                                               options:item.options ?: @[]
                                                            sourceView:self.view
                                                      selectionHandler:^(NSString *option) {
@@ -127,7 +129,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             } else if (item.defaultValue) {
                 item.value = item.defaultValue;
             }
-            if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
+            if (item.type == HCCellItemTypeEditableInfo) {
                 item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
             }
         }
@@ -153,7 +155,15 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (HCCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
     HCEnvSection *section = self.sections[indexPath.section];
-    return section.items[indexPath.row];
+    NSArray<HCCellItem *> *visibleItems = [self visibleItemsForSection:section];
+    return visibleItems[indexPath.row];
+}
+
+- (NSArray<HCCellItem *> *)visibleItemsForSection:(HCEnvSection *)section {
+    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(HCCellItem *item, NSDictionary *bindings) {
+        return !item.hidden;
+    }];
+    return [section.items filteredArrayUsingPredicate:predicate];
 }
 
 #pragma mark - UITableViewDataSource
@@ -164,7 +174,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     HCEnvSection *sectionModel = self.sections[section];
-    return sectionModel.items.count;
+    return [self visibleItemsForSection:sectionModel].count;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -213,14 +223,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
             cell.userInteractionEnabled = NO;
             cell.accessoryType = UITableViewCellAccessoryNone;
-            if (item.desc.length > 0) {
-                NSString *detail = item.detail ?: @"";
-                cell.detailTextLabel.text = [NSString stringWithFormat:@"%@\n%@", detail, item.desc];
-                cell.detailTextLabel.numberOfLines = 0;
-            } else {
-                cell.detailTextLabel.text = item.detail;
-                cell.detailTextLabel.numberOfLines = 1;
-            }
+            cell.detailTextLabel.text = item.detail;
+            cell.detailTextLabel.numberOfLines = 1;
             return cell;
         }
         case HCCellItemTypeEditableInfo: {
@@ -252,11 +256,27 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kHCValueCellId];
             }
             cell.textLabel.text = item.title;
-            cell.detailTextLabel.text = item.detail;
-            cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+            if (item.type == HCCellItemTypeAction) {
+                cell.detailTextLabel.text = nil;
+                cell.accessoryType = UITableViewCellAccessoryNone;
+                cell.textLabel.textAlignment = NSTextAlignmentCenter;
+                cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
+                UIColor *backgroundColor = item.enabled ? self.view.tintColor : UIColor.systemGray3Color;
+                cell.backgroundColor = backgroundColor;
+                cell.textLabel.textColor = UIColor.whiteColor;
+                cell.detailTextLabel.textColor = UIColor.whiteColor;
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            } else {
+                cell.detailTextLabel.text = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.textLabel.textAlignment = NSTextAlignmentNatural;
+                cell.textLabel.font = [UIFont systemFontOfSize:17.0];
+                cell.backgroundColor = UIColor.systemBackgroundColor;
+                cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+                cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            }
             cell.userInteractionEnabled = YES;
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             return cell;
         }
     }
@@ -281,7 +301,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [self presentPickerForItem:item];
             break;
         case HCCellItemTypeAction:
-            if (item.actionHandler) {
+            if ([item.identifier isEqualToString:HCEnvItemIdSave]) {
+                [self persistEnvConfig];
+                [self presentRequest:[HCPresentationRequest toastWithMessage:@"环境已保存"]];
+            } else if (item.actionHandler) {
                 item.actionHandler(item);
             } else {
                 [self applyValue:item.value forItem:item];

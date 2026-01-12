@@ -15,6 +15,7 @@ NSString *const HCEnvItemIdSaas = @"env.saas";
 NSString *const HCEnvItemIdIsolation = @"env.isolation";
 NSString *const HCEnvItemIdVersion = @"env.version";
 NSString *const HCEnvItemIdResult = @"env.result";
+NSString *const HCEnvItemIdSave = @"env.save";
 NSString *const HCEnvItemIdElb = @"config.elb";
 
 static NSString *const kEnvItemStoreIsolation = @"HCEnvKit.isolation";
@@ -86,7 +87,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
 /// 1. 在本文件顶部新增常量标识（如 HCEnvItemIdXXX）与持久化 key（如 kEnvItemStoreXXX）。
 /// 2. 在 buildEnvSection 中创建 HCCellItem，补充 title、type、storeKey/defaultValue、dependsOn 和 recomputeBlock。
 /// 3. 在 configFromItems 中读取新字段，映射到 HCEnvConfig 属性，并在 HCEnvKit 中持久化该属性。
-/// 4. 如需影响联动显示，确保将新项加入 result 的 dependsOn 列表，并在 recomputeBlock 中刷新 detail/desc/title。
+/// 4. 如需影响联动显示，确保将新项加入 result 的 dependsOn 列表，并在 recomputeBlock 中刷新 detail/title。
 + (HCEnvSection *)buildEnvSection {
     HCEnvConfig *config = [HCEnvKit currentConfig];
 
@@ -99,17 +100,29 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     envType.value = @(config.envType);
 
     // 环境编号：需要根据 envType 切换持久化 key。
-    HCCellItem *cluster = [HCCellItem stepperItemWithIdentifier:HCEnvItemIdCluster
-                                                          title:@"环境编号"
-                                                       storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
-                                                   defaultValue:@(1)
-                                                        minimum:kEnvClusterMin
-                                                        maximum:kEnvClusterMax];
+    HCCellItem *cluster = [HCCellItem stringItemWithIdentifier:HCEnvItemIdCluster
+                                                         title:@"环境编号"
+                                                      storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
+                                                  defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin]];
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
-    cluster.value = @(initialCluster);
-    cluster.detail = [NSString stringWithFormat:@"%ld", (long)initialCluster];
+    cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.dependsOn = @[HCEnvItemIdEnvType];
+    cluster.validator = ^NSString *(NSString *input) {
+        if (input.length == 0) {
+            return @"环境编号不能为空";
+        }
+        NSScanner *scanner = [NSScanner scannerWithString:input];
+        NSInteger number = 0;
+        BOOL isNumber = [scanner scanInteger:&number] && scanner.isAtEnd;
+        if (!isNumber) {
+            return @"环境编号需要为数字";
+        }
+        if (number < kEnvClusterMin || number > kEnvClusterMax) {
+            return [NSString stringWithFormat:@"环境编号范围为 %ld-%ld", (long)kEnvClusterMin, (long)kEnvClusterMax];
+        }
+        return nil;
+    };
     cluster.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
         HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
         HCEnvType envTypeValue = HCIntValue(envItem.value);
@@ -121,10 +134,10 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
             item.value = stored ?: item.defaultValue;
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
+        item.hidden = (envTypeValue == HCEnvTypeRelease || envTypeValue == HCEnvTypeCustom);
         NSInteger current = MAX(kEnvClusterMin, HCIntValue(item.value));
         current = MIN(kEnvClusterMax, current);
-        item.value = @(current);
-        item.detail = [NSString stringWithFormat:@"%ld", (long)current];
+        item.value = [NSString stringWithFormat:@"%ld", (long)current];
     };
 
     // Saas 环境：根据 cluster 自动生成默认值，仍允许手动编辑。
@@ -133,7 +146,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
                                                defaultValue:nil];
     saas.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster];
-    saas.detail = saas.value;
     saas.disabledHint = @"仅 uat/dev 可用";
     saas.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster];
     saas.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
@@ -152,6 +164,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
             }
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
+        item.hidden = (envTypeValue == HCEnvTypeRelease);
         NSInteger clusterValue = MAX(kEnvClusterMin, HCIntValue(itemsById[HCEnvItemIdCluster].value));
         NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
         if ([item.value isKindOfClass:[NSString class]]) {
@@ -167,7 +180,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         } else {
             item.value = autoValue;
         }
-        item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
     // 隔离参数：不同环境类型各自持久化。
@@ -176,7 +188,6 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
                                                         storeKey:storeKeyForEnvType(kEnvItemStoreIsolation, config.envType)
                                                     defaultValue:@""];
     isolation.value = config.isolation;
-    isolation.detail = config.isolation;
     isolation.disabledHint = @"仅 uat/dev 可用";
     isolation.dependsOn = @[HCEnvItemIdEnvType];
     isolation.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
@@ -190,7 +201,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
             item.value = stored ?: item.defaultValue;
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
-        item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
+        item.hidden = (envTypeValue == HCEnvTypeRelease);
     };
 
     // 版本号：不同环境类型各自持久化。
@@ -199,17 +210,8 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
                                                       storeKey:storeKeyForEnvType(kEnvItemStoreVersion, config.envType)
                                                   defaultValue:@"v1"];
     version.value = config.version;
-    version.detail = config.version;
     version.disabledHint = @"仅 uat/dev 可用";
     version.dependsOn = @[HCEnvItemIdEnvType];
-    version.validator = ^NSString *(NSString *input) {
-        if (input.length == 0) {
-            return nil;
-        }
-        NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:@"^v\\d+$" options:0 error:nil];
-        NSInteger matches = [regex numberOfMatchesInString:input options:0 range:NSMakeRange(0, input.length)];
-        return matches == 0 ? @"版本号格式必须为 v+数字" : nil;
-    };
     version.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
         HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
         HCEnvType envTypeValue = HCIntValue(envItem.value);
@@ -221,7 +223,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
             item.value = stored ?: item.defaultValue;
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
-        item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
+        item.hidden = (envTypeValue == HCEnvTypeRelease || envTypeValue == HCEnvTypeCustom);
     };
 
     // Final URL：自定义环境可编辑，其余环境根据配置自动生成。
@@ -236,7 +238,7 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
         NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
-        NSString *previousAuto = [item.desc isKindOfClass:[NSString class]] ? item.desc : @"";
+        NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
         BOOL isCustom = (config.envType == HCEnvTypeCustom);
         BOOL isRelease = config.envType == HCEnvTypeRelease;
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreResult, config.envType);
@@ -251,12 +253,21 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         if (isRelease || current.length == 0 || [current isEqualToString:previousAuto]) {
             item.value = autoBaseURL;
         }
-        item.desc = autoBaseURL;
+        item.autoValue = autoBaseURL;
         item.title = @"Final URL";
+        item.hidden = isRelease;
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result];
+    HCCellItem *save = [HCCellItem actionItemWithIdentifier:HCEnvItemIdSave title:@"保存环境" handler:nil];
+    save.dependsOn = @[HCEnvItemIdEnvType];
+    save.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
+        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
+        item.hidden = (envItem.value == nil);
+        item.enabled = YES;
+    };
+
+    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
     HCEnvSection *section = [HCEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
