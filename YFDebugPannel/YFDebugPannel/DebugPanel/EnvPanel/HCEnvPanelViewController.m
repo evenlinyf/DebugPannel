@@ -4,7 +4,6 @@
 #import "HCEnvPanelViewController.h"
 #import "HCEnvPanelBuilder.h"
 #import "HCCellItem.h"
-#import "HCEnvKit.h"
 #import "HCEnvSection.h"
 #import "HCPresentationRequest.h"
 #import "HCSegmentCell.h"
@@ -35,6 +34,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     self.sections = [HCEnvPanelBuilder buildSections];
     [self loadPersistedValues];
     [HCEnvPanelBuilder refreshSections:self.sections];
+    __weak typeof(self) weakSelf = self;
+    [HCEnvPanelBuilder configureSaveActionForSections:self.sections onSave:^{
+        [weakSelf.tableView reloadData];
+    }];
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
@@ -54,6 +57,9 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
         [self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
     ]];
 
+    [HCEnvPanelBuilder captureBaselineForSections:self.sections];
+    [HCEnvPanelBuilder updateSaveItemVisibilityInSections:self.sections];
+
     if (self.presentingViewController) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"关闭" style:UIBarButtonItemStylePlain target:self action:@selector(closeTapped)];
     }
@@ -71,9 +77,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     if (item.valueTransformer) {
         item.valueTransformer(item);
     }
-    [self persistIfNeededForItem:item];
-    [self persistEnvConfig];
     [HCEnvPanelBuilder refreshSections:self.sections];
+    [HCEnvPanelBuilder updateSaveItemVisibilityInSections:self.sections];
     [self.tableView reloadData];
 }
 
@@ -134,23 +139,6 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             }
         }
     }
-}
-
-- (void)persistIfNeededForItem:(HCCellItem *)item {
-    if (item.storeKey.length == 0) {
-        return;
-    }
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (item.value) {
-        [defaults setObject:item.value forKey:item.storeKey];
-    } else {
-        [defaults removeObjectForKey:item.storeKey];
-    }
-}
-
-- (void)persistEnvConfig {
-    HCEnvConfig *config = [HCEnvPanelBuilder configFromSections:self.sections];
-    [HCEnvKit saveConfig:config];
 }
 
 - (HCCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {

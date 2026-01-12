@@ -18,6 +18,8 @@ NSString *const HCEnvItemIdIsolation = @"env.isolation";
 NSString *const HCEnvItemIdVersion = @"env.version";
 NSString *const HCEnvItemIdResult = @"env.result";
 NSString *const HCEnvItemIdElb = @"config.elb";
+NSString *const HCEnvItemIdSave = @"env.save";
+NSNotificationName const HCEnvPanelDidSaveNotification = @"HCEnvPanelDidSaveNotification";
 
 static NSString *const kEnvItemStoreIsolation = @"HCEnvKit.isolation";
 static NSString *const kEnvItemStoreVersion = @"HCEnvKit.version";
@@ -28,6 +30,25 @@ static NSInteger const kEnvClusterMin = 1;
 static NSInteger const kEnvClusterMax = 20;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
 static const void *kHCEnvPanelExitObserverKey = &kHCEnvPanelExitObserverKey;
+static const void *kHCEnvPanelSnapshotKey = &kHCEnvPanelSnapshotKey;
+
+@interface HCEnvPanelChangeSnapshot ()
+@property (nonatomic, strong) HCEnvConfig *config;
+@property (nonatomic, copy) NSDictionary<NSString *, id> *storeValues;
+@end
+
+@implementation HCEnvPanelChangeSnapshot
+
+- (instancetype)initWithConfig:(HCEnvConfig *)config storeValues:(NSDictionary<NSString *, id> *)storeValues {
+    self = [super init];
+    if (self) {
+        _config = [config copy];
+        _storeValues = [storeValues copy];
+    }
+    return self;
+}
+
+@end
 
 static UIWindow *activeWindow(void) {
     UIApplication *application = UIApplication.sharedApplication;
@@ -110,6 +131,53 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
+static BOOL isEnvConfigIdentifier(NSString *identifier) {
+    if (identifier.length == 0) {
+        return NO;
+    }
+    static NSSet<NSString *> *envConfigIdentifiers = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        envConfigIdentifiers = [NSSet setWithArray:@[
+            HCEnvItemIdEnvType,
+            HCEnvItemIdCluster,
+            HCEnvItemIdIsolation,
+            HCEnvItemIdVersion,
+            HCEnvItemIdResult
+        ]];
+    });
+    return [envConfigIdentifiers containsObject:identifier];
+}
+
+static HCCellItem *saveItemFromSections(NSArray<HCEnvSection *> *sections) {
+    NSDictionary<NSString *, HCCellItem *> *itemsById = [HCEnvPanelBuilder indexItemsByIdFromSections:sections];
+    return itemsById[HCEnvItemIdSave];
+}
+
+static HCEnvPanelChangeSnapshot *snapshotForSections(NSArray<HCEnvSection *> *sections) {
+    return objc_getAssociatedObject(sections, kHCEnvPanelSnapshotKey);
+}
+
+static void setSnapshotForSections(NSArray<HCEnvSection *> *sections, HCEnvPanelChangeSnapshot *snapshot) {
+    objc_setAssociatedObject(sections, kHCEnvPanelSnapshotKey, snapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    for (HCEnvSection *section in sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.storeKey.length == 0) {
+                continue;
+            }
+            if (item.value) {
+                [defaults setObject:item.value forKey:item.storeKey];
+            } else {
+                [defaults removeObjectForKey:item.storeKey];
+            }
+        }
+    }
+}
+
 @implementation HCEnvPanelBuilder
 
 + (NSArray<HCEnvSection *> *)buildSections {
@@ -151,6 +219,84 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
 + (HCEnvConfig *)configFromSections:(NSArray<HCEnvSection *> *)sections {
     NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
     return [self configFromItems:itemsById];
+}
+
++ (HCEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<HCEnvSection *> *)sections {
+    HCEnvConfig *config = [self configFromSections:sections];
+    NSMutableDictionary<NSString *, id> *values = [NSMutableDictionary dictionary];
+    for (HCEnvSection *section in sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.storeKey.length == 0 || isEnvConfigIdentifier(item.identifier)) {
+                continue;
+            }
+            if (item.identifier.length == 0) {
+                continue;
+            }
+            values[item.identifier] = item.value ?: [NSNull null];
+        }
+    }
+    return [[HCEnvPanelChangeSnapshot alloc] initWithConfig:config storeValues:values];
+}
+
++ (BOOL)sections:(NSArray<HCEnvSection *> *)sections differFromSnapshot:(HCEnvPanelChangeSnapshot *)snapshot {
+    if (!snapshot) {
+        return NO;
+    }
+    HCEnvConfig *currentConfig = [self configFromSections:sections];
+    if (![currentConfig isEqual:snapshot.config]) {
+        return YES;
+    }
+    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    for (NSString *identifier in snapshot.storeValues) {
+        HCCellItem *item = itemsById[identifier];
+        if (!item) {
+            continue;
+        }
+        id baseline = snapshot.storeValues[identifier] ?: [NSNull null];
+        id current = item.value ?: [NSNull null];
+        if (![baseline isEqual:current]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
++ (void)configureSaveActionForSections:(NSArray<HCEnvSection *> *)sections onSave:(dispatch_block_t)onSave {
+    HCCellItem *saveItem = saveItemFromSections(sections);
+    if (!saveItem) {
+        return;
+    }
+    __weak NSArray<HCEnvSection *> *weakSections = sections;
+    saveItem.actionHandler = ^(HCCellItem *item) {
+        NSArray<HCEnvSection *> *strongSections = weakSections;
+        if (!strongSections) {
+            return;
+        }
+        persistAllItemsInSections(strongSections);
+        HCEnvConfig *config = [self configFromSections:strongSections];
+        [HCEnvKit saveConfig:config];
+        [self captureBaselineForSections:strongSections];
+        [self updateSaveItemVisibilityInSections:strongSections];
+        if (onSave) {
+            onSave();
+        }
+        [[NSNotificationCenter defaultCenter] postNotificationName:HCEnvPanelDidSaveNotification object:nil];
+    };
+}
+
++ (void)updateSaveItemVisibilityInSections:(NSArray<HCEnvSection *> *)sections {
+    HCCellItem *saveItem = saveItemFromSections(sections);
+    if (!saveItem) {
+        return;
+    }
+    BOOL pending = [self sections:sections differFromSnapshot:snapshotForSections(sections)];
+    saveItem.hidden = !pending;
+    saveItem.enabled = pending;
+}
+
++ (void)captureBaselineForSections:(NSArray<HCEnvSection *> *)sections {
+    HCEnvPanelChangeSnapshot *snapshot = [self changeSnapshotFromSections:sections];
+    setSnapshotForSections(sections, snapshot);
 }
 
 /// 如何新增配置项（重要）：
@@ -329,7 +475,11 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result];
+    HCCellItem *save = [HCCellItem actionItemWithIdentifier:HCEnvItemIdSave title:@"保存" handler:nil];
+    save.hidden = YES;
+    save.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdIsolation, HCEnvItemIdVersion, HCEnvItemIdResult];
+
+    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
     HCEnvSection *section = [HCEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
