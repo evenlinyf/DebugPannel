@@ -7,6 +7,10 @@
 @class HCEnvConfig;
 @class HCEnvSection;
 @class UIViewController;
+@class HCEnvPanelChangeSnapshot;
+
+FOUNDATION_EXPORT NSString *const HCEnvItemIdSave;
+FOUNDATION_EXPORT NSNotificationName const HCEnvPanelDidSaveNotification;
 
 /// 创建时间：2026/01/08
 /// 创建人：Codex
@@ -22,4 +26,23 @@
 + (void)refreshSections:(NSArray<HCEnvSection *> *)sections;
 /// 根据区块配置构建环境配置模型。
 + (HCEnvConfig *)configFromSections:(NSArray<HCEnvSection *> *)sections;
+/// 生成当前区块快照，用于判断是否有待保存的变更。
++ (HCEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<HCEnvSection *> *)sections;
+/// 判断当前区块与快照是否存在差异。
++ (BOOL)sections:(NSArray<HCEnvSection *> *)sections differFromSnapshot:(HCEnvPanelChangeSnapshot *)snapshot;
+/// 绑定保存按钮行为并在保存后触发回调。
++ (void)configureSaveActionForSections:(NSArray<HCEnvSection *> *)sections onSave:(dispatch_block_t)onSave;
+/// 更新保存按钮可见状态。
++ (void)updateSaveItemVisibilityInSections:(NSArray<HCEnvSection *> *)sections;
+/// 捕获当前快照用于后续对比。
++ (void)captureBaselineForSections:(NSArray<HCEnvSection *> *)sections;
+@end
+
+/// 创建时间：2026/01/08
+/// 创建人：Codex
+/// 用途：记录面板配置的快照。
+@interface HCEnvPanelChangeSnapshot : NSObject
+@property (nonatomic, strong, readonly) HCEnvConfig *config;
+@property (nonatomic, copy, readonly) NSDictionary<NSString *, id> *storeValues;
+- (instancetype)initWithConfig:(HCEnvConfig *)config storeValues:(NSDictionary<NSString *, id> *)storeValues;
 @end
