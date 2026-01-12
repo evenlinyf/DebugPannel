@@ -2,8 +2,9 @@
 /// 创建人：Codex
 /// 用途：调试面板主页面控制器实现。
 #import "HCEnvPanelViewController.h"
-#import "HCEnvPanelViewModel.h"
+#import "HCEnvPanelBuilder.h"
 #import "HCCellItem.h"
+#import "HCEnvKit.h"
 #import "HCEnvSection.h"
 #import "HCPresentationRequest.h"
 #import "HCSegmentCell.h"
@@ -13,7 +14,7 @@
 
 @interface HCEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
-@property (nonatomic, strong) HCEnvPanelViewModel *viewModel;
+@property (nonatomic, copy) NSArray<HCEnvSection *> *sections;
 @end
 
 @implementation HCEnvPanelViewController
@@ -31,7 +32,9 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     self.title = @"调试面板";
     self.view.backgroundColor = UIColor.systemBackgroundColor;
 
-    self.viewModel = [[HCEnvPanelViewModel alloc] init];
+    self.sections = [HCEnvPanelBuilder buildSections];
+    [self loadPersistedValues];
+    [HCEnvPanelBuilder refreshSections:self.sections];
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
@@ -61,11 +64,17 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 }
 
 - (void)applyValue:(id)value forItem:(HCCellItem *)item {
-    NSArray<NSIndexPath *> *paths = [self.viewModel updateItem:item value:value];
-    if (paths.count == 0) {
-        return;
+    item.value = value;
+    if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
+        item.detail = value ? [NSString stringWithFormat:@"%@", value] : nil;
     }
-    [self.tableView reloadRowsAtIndexPaths:paths withRowAnimation:UITableViewRowAnimationAutomatic];
+    if (item.valueTransformer) {
+        item.valueTransformer(item);
+    }
+    [self persistIfNeededForItem:item];
+    [self persistEnvConfig];
+    [HCEnvPanelBuilder refreshSections:self.sections];
+    [self.tableView reloadData];
 }
 
 - (void)presentStringInputForItem:(HCCellItem *)item {
@@ -106,24 +115,65 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     [HCAlertPresenter presentToastFrom:self message:request.title duration:1.0];
 }
 
+- (void)loadPersistedValues {
+    for (HCEnvSection *section in self.sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.storeKey.length == 0) {
+                continue;
+            }
+            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
+            if (stored) {
+                item.value = stored;
+            } else if (item.defaultValue) {
+                item.value = item.defaultValue;
+            }
+            if (item.type == HCCellItemTypeString || item.type == HCCellItemTypeStepper || item.type == HCCellItemTypeEditableInfo) {
+                item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
+            }
+        }
+    }
+}
+
+- (void)persistIfNeededForItem:(HCCellItem *)item {
+    if (item.storeKey.length == 0) {
+        return;
+    }
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (item.value) {
+        [defaults setObject:item.value forKey:item.storeKey];
+    } else {
+        [defaults removeObjectForKey:item.storeKey];
+    }
+}
+
+- (void)persistEnvConfig {
+    HCEnvConfig *config = [HCEnvPanelBuilder configFromSections:self.sections];
+    [HCEnvKit saveConfig:config];
+}
+
+- (HCCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
+    HCEnvSection *section = self.sections[indexPath.section];
+    return section.items[indexPath.row];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.viewModel.sections.count;
+    return self.sections.count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    HCEnvSection *sectionModel = self.viewModel.sections[section];
+    HCEnvSection *sectionModel = self.sections[section];
     return sectionModel.items.count;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    HCEnvSection *sectionModel = self.viewModel.sections[section];
+    HCEnvSection *sectionModel = self.sections[section];
     return sectionModel.title;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    HCCellItem *item = [self.viewModel itemAtIndexPath:indexPath];
+    HCCellItem *item = [self itemAtIndexPath:indexPath];
     switch (item.type) {
         case HCCellItemTypeSegment: {
             HCSegmentCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCSegmentCellId forIndexPath:indexPath];
@@ -216,9 +266,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    HCCellItem *item = [self.viewModel itemAtIndexPath:indexPath];
+    HCCellItem *item = [self itemAtIndexPath:indexPath];
     if (!item.enabled) {
-        [self presentRequest:[self.viewModel presentationForDisabledItem:item]];
+        NSString *message = item.disabledHint.length > 0 ? item.disabledHint : @"当前不可用";
+        [self presentRequest:[HCPresentationRequest toastWithMessage:message]];
         return;
     }
     switch (item.type) {
