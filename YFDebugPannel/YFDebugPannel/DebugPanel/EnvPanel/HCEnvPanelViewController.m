@@ -184,7 +184,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [cell configureWithItem:item];
             return cell;
         }
-        case HCCellItemTypeToggle: {
+        case HCCellItemTypeSwitch: {
             HCSwitchCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCSwitchCellId forIndexPath:indexPath];
             __weak typeof(self) weakSelf = self;
             cell.valueChanged = ^(BOOL isOn) {
@@ -281,7 +281,11 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [self presentPickerForItem:item];
             break;
         case HCCellItemTypeAction:
-            [self applyValue:item.value forItem:item];
+            if (item.actionHandler) {
+                item.actionHandler(item);
+            } else {
+                [self applyValue:item.value forItem:item];
+            }
             break;
         default:
             break;
