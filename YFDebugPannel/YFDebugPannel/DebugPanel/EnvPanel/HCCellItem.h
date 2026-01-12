@@ -26,9 +26,10 @@ typedef void (^HCCellItemActionHandler)(HCCellItem *item);
 @interface HCCellItem : NSObject
 @property (nonatomic, copy, readonly) NSString *identifier;
 @property (nonatomic, copy) NSString *title;
-@property (nonatomic, copy) NSString *desc;
 @property (nonatomic, copy) NSString *detail;
+@property (nonatomic, copy) NSString *autoValue;
 @property (nonatomic, assign) BOOL enabled;
+@property (nonatomic, assign) BOOL hidden;
 @property (nonatomic, copy) NSString *disabledHint;
 
 @property (nonatomic, assign) HCCellItemType type;
