@@ -316,10 +316,7 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     envType.value = @(config.envType);
 
     // 环境编号：需要根据 envType 切换持久化 key。
-    HCCellItem *cluster = [HCCellItem stringItemWithIdentifier:HCEnvItemIdCluster
-                                                         title:@"环境编号"
-                                                      storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
-                                                  defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin]];
+    HCCellItem *cluster = [HCCellItem stepperItemWithIdentifier:HCEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin] minimum:1 maximum:20];
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
     cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
     cluster.disabledHint = @"仅 uat/dev 可用";
@@ -354,6 +351,7 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
         NSInteger current = MAX(kEnvClusterMin, HCIntValue(item.value));
         current = MIN(kEnvClusterMax, current);
         item.value = [NSString stringWithFormat:@"%ld", (long)current];
+        item.detail = item.value;
     };
 
     // Saas 环境：根据 cluster 自动生成默认值，仍允许手动编辑。

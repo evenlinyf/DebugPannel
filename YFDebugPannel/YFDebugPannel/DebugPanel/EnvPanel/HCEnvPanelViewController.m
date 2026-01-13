@@ -108,7 +108,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     UIAlertController *sheet = [HCAlertPresenter actionSheetWithTitle:item.title
                                                               message:message
                                                               options:item.options ?: @[]
-                                                           sourceView:self.view
+                                                           sourceView:nil
                                                      selectionHandler:^(NSString *option) {
         [weakSelf applyValue:option forItem:item];
     }];
