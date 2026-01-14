@@ -1,6 +1,6 @@
-#import "HCValueHelpers.h"
+#import "YFValueHelpers.h"
 
-NSInteger HCIntValue(id value) {
+NSInteger YFIntValue(id value) {
     if ([value isKindOfClass:[NSNumber class]]) {
         return [value integerValue];
     }
@@ -10,7 +10,7 @@ NSInteger HCIntValue(id value) {
     return 0;
 }
 
-BOOL HCBoolValue(id value) {
+BOOL YFBoolValue(id value) {
     if ([value isKindOfClass:[NSNumber class]]) {
         return [value boolValue];
     }

@@ -1,30 +1,30 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板主页面控制器实现。
-#import "HCEnvPanelViewController.h"
-#import "HCEnvPanelBuilder.h"
-#import "HCCellItem.h"
-#import "HCEnvSection.h"
-#import "HCPresentationRequest.h"
-#import "HCSegmentCell.h"
-#import "HCSwitchCell.h"
-#import "HCStepperCell.h"
-#import "HCAlertPresenter.h"
+#import "YFEnvPanelViewController.h"
+#import "YFEnvPanelBuilder.h"
+#import "YFCellItem.h"
+#import "YFEnvSection.h"
+#import "YFPresentationRequest.h"
+#import "YFSegmentCell.h"
+#import "YFSwitchCell.h"
+#import "YFStepperCell.h"
+#import "YFAlertPresenter.h"
 
-@interface HCEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface YFEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
-@property (nonatomic, copy) NSArray<HCEnvSection *> *sections;
-@property (nonatomic, strong) id<HCEnvPanelBuilding> builder;
+@property (nonatomic, copy) NSArray<YFEnvSection *> *sections;
+@property (nonatomic, strong) id<YFDebugPannelProtocol> builder;
 @end
 
-@implementation HCEnvPanelViewController
+@implementation YFEnvPanelViewController
 
-static NSString *const kHCSegmentCellId = @"HCSegmentCell";
-static NSString *const kHCSwitchCellId = @"HCSwitchCell";
-static NSString *const kHCStepperCellId = @"HCStepperCell";
-static NSString *const kHCValueCellId = @"HCValueCell";
-static NSString *const kHCInfoCellId = @"HCInfoCell";
-static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
+static NSString *const kYFSegmentCellId = @"YFSegmentCell";
+static NSString *const kYFSwitchCellId = @"YFSwitchCell";
+static NSString *const kYFStepperCellId = @"YFStepperCell";
+static NSString *const kYFValueCellId = @"YFValueCell";
+static NSString *const kYFInfoCellId = @"YFInfoCell";
+static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -40,9 +40,9 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     self.tableView.delegate = self;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 60.0;
-    [self.tableView registerClass:[HCSegmentCell class] forCellReuseIdentifier:kHCSegmentCellId];
-    [self.tableView registerClass:[HCSwitchCell class] forCellReuseIdentifier:kHCSwitchCellId];
-    [self.tableView registerClass:[HCStepperCell class] forCellReuseIdentifier:kHCStepperCellId];
+    [self.tableView registerClass:[YFSegmentCell class] forCellReuseIdentifier:kYFSegmentCellId];
+    [self.tableView registerClass:[YFSwitchCell class] forCellReuseIdentifier:kYFSwitchCellId];
+    [self.tableView registerClass:[YFStepperCell class] forCellReuseIdentifier:kYFStepperCellId];
 
     [self.view addSubview:self.tableView];
 
@@ -62,21 +62,21 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (instancetype)initWithBuilder:(id<HCEnvPanelBuilding>)builder {
+- (instancetype)initWithBuilder:(id<YFDebugPannelProtocol>)builder {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _builder = builder ?: [[HCEnvPanelBuilder alloc] init];
+        _builder = builder ?: [[YFEnvPanelBuilder alloc] init];
     }
     return self;
 }
 
 - (instancetype)init {
-    return [self initWithBuilder:[[HCEnvPanelBuilder alloc] init]];
+    return [self initWithBuilder:[[YFEnvPanelBuilder alloc] init]];
 }
 
-- (void)applyValue:(id)value forItem:(HCCellItem *)item {
+- (void)applyValue:(id)value forItem:(YFCellItem *)item {
     item.value = value;
-    if (item.type == HCCellItemTypeEditableInfo) {
+    if (item.type == YFCellItemTypeEditableInfo) {
         item.detail = value ? [NSString stringWithFormat:@"%@", value] : nil;
     }
     if (item.valueTransformer) {
@@ -86,18 +86,18 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     [self.tableView reloadData];
 }
 
-- (void)presentStringInputForItem:(HCCellItem *)item {
+- (void)presentStringInputForItem:(YFCellItem *)item {
     __weak typeof(self) weakSelf = self;
     NSString *initialText = item.value ? [NSString stringWithFormat:@"%@", item.value] : @"";
     NSString *message = item.detail.length > 0 ? item.detail : nil;
-    UIAlertController *alert = [HCAlertPresenter textInputAlertWithTitle:item.title
+    UIAlertController *alert = [YFAlertPresenter textInputAlertWithTitle:item.title
                                                                  message:message
                                                              initialText:initialText
                                                           confirmHandler:^(NSString *text) {
         if (item.validator) {
             NSString *errorMessage = item.validator(text);
             if (errorMessage.length > 0) {
-                [weakSelf presentRequest:[HCPresentationRequest toastWithMessage:errorMessage]];
+                [weakSelf presentRequest:[YFPresentationRequest toastWithMessage:errorMessage]];
                 return;
             }
         }
@@ -106,10 +106,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)presentPickerForItem:(HCCellItem *)item {
+- (void)presentPickerForItem:(YFCellItem *)item {
     __weak typeof(self) weakSelf = self;
     NSString *message = item.detail.length > 0 ? item.detail : nil;
-    UIAlertController *sheet = [HCAlertPresenter actionSheetWithTitle:item.title
+    UIAlertController *sheet = [YFAlertPresenter actionSheetWithTitle:item.title
                                                               message:message
                                                               options:item.options ?: @[]
                                                            sourceView:nil
@@ -119,21 +119,21 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     [self presentViewController:sheet animated:YES completion:nil];
 }
 
-- (void)presentRequest:(HCPresentationRequest *)request {
-    if (request.type != HCPresentationTypeToast) {
+- (void)presentRequest:(YFPresentationRequest *)request {
+    if (request.type != YFPresentationTypeToast) {
         return;
     }
-    [HCAlertPresenter presentToastFrom:self message:request.title duration:1.0];
+    [YFAlertPresenter presentToastFrom:self message:request.title duration:1.0];
 }
 
-- (HCCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
-    HCEnvSection *section = self.sections[indexPath.section];
-    NSArray<HCCellItem *> *visibleItems = [self visibleItemsForSection:section];
+- (YFCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
+    YFEnvSection *section = self.sections[indexPath.section];
+    NSArray<YFCellItem *> *visibleItems = [self visibleItemsForSection:section];
     return visibleItems[indexPath.row];
 }
 
-- (NSArray<HCCellItem *> *)visibleItemsForSection:(HCEnvSection *)section {
-    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(HCCellItem *item, NSDictionary *bindings) {
+- (NSArray<YFCellItem *> *)visibleItemsForSection:(YFEnvSection *)section {
+    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(YFCellItem *item, NSDictionary *bindings) {
         return !item.hidden;
     }];
     return [section.items filteredArrayUsingPredicate:predicate];
@@ -146,20 +146,20 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    HCEnvSection *sectionModel = self.sections[section];
+    YFEnvSection *sectionModel = self.sections[section];
     return [self visibleItemsForSection:sectionModel].count;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    HCEnvSection *sectionModel = self.sections[section];
+    YFEnvSection *sectionModel = self.sections[section];
     return sectionModel.title;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    HCCellItem *item = [self itemAtIndexPath:indexPath];
+    YFCellItem *item = [self itemAtIndexPath:indexPath];
     switch (item.type) {
-        case HCCellItemTypeSegment: {
-            HCSegmentCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCSegmentCellId forIndexPath:indexPath];
+        case YFCellItemTypeSegment: {
+            YFSegmentCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFSegmentCellId forIndexPath:indexPath];
             __weak typeof(self) weakSelf = self;
             cell.valueChanged = ^(NSInteger selectedIndex) {
                 [weakSelf applyValue:@(selectedIndex) forItem:item];
@@ -167,8 +167,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [cell configureWithItem:item];
             return cell;
         }
-        case HCCellItemTypeSwitch: {
-            HCSwitchCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCSwitchCellId forIndexPath:indexPath];
+        case YFCellItemTypeSwitch: {
+            YFSwitchCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFSwitchCellId forIndexPath:indexPath];
             __weak typeof(self) weakSelf = self;
             cell.valueChanged = ^(BOOL isOn) {
                 [weakSelf applyValue:@(isOn) forItem:item];
@@ -176,8 +176,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [cell configureWithItem:item];
             return cell;
         }
-        case HCCellItemTypeStepper: {
-            HCStepperCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCStepperCellId forIndexPath:indexPath];
+        case YFCellItemTypeStepper: {
+            YFStepperCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFStepperCellId forIndexPath:indexPath];
             __weak typeof(self) weakSelf = self;
             cell.valueChanged = ^(NSInteger value) {
                 [weakSelf applyValue:@(value) forItem:item];
@@ -185,10 +185,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             [cell configureWithItem:item minimum:item.stepperMin maximum:item.stepperMax];
             return cell;
         }
-        case HCCellItemTypeInfo: {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCInfoCellId];
+        case YFCellItemTypeInfo: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFInfoCellId];
             if (!cell) {
-                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kHCInfoCellId];
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kYFInfoCellId];
             }
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             cell.textLabel.text = item.title;
@@ -200,10 +200,10 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             cell.detailTextLabel.numberOfLines = 1;
             return cell;
         }
-        case HCCellItemTypeEditableInfo: {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCEditableInfoCellId];
+        case YFCellItemTypeEditableInfo: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFEditableInfoCellId];
             if (!cell) {
-                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kHCEditableInfoCellId];
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kYFEditableInfoCellId];
             }
             UILabel *accessoryLabel = [[UILabel alloc] init];
             accessoryLabel.text = @"编辑";
@@ -221,15 +221,15 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
             cell.userInteractionEnabled = YES;
             return cell;
         }
-        case HCCellItemTypeString:
-        case HCCellItemTypePicker:
-        case HCCellItemTypeAction: {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kHCValueCellId];
+        case YFCellItemTypeString:
+        case YFCellItemTypePicker:
+        case YFCellItemTypeAction: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFValueCellId];
             if (!cell) {
-                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kHCValueCellId];
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kYFValueCellId];
             }
             cell.textLabel.text = item.title;
-            if (item.type == HCCellItemTypeAction) {
+            if (item.type == YFCellItemTypeAction) {
                 cell.detailTextLabel.text = nil;
                 cell.accessoryType = UITableViewCellAccessoryNone;
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;
@@ -259,21 +259,21 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    HCCellItem *item = [self itemAtIndexPath:indexPath];
+    YFCellItem *item = [self itemAtIndexPath:indexPath];
     if (!item.enabled) {
         NSString *message = item.disabledHint.length > 0 ? item.disabledHint : @"当前不可用";
-        [self presentRequest:[HCPresentationRequest toastWithMessage:message]];
+        [self presentRequest:[YFPresentationRequest toastWithMessage:message]];
         return;
     }
     switch (item.type) {
-        case HCCellItemTypeString:
-        case HCCellItemTypeEditableInfo:
+        case YFCellItemTypeString:
+        case YFCellItemTypeEditableInfo:
             [self presentStringInputForItem:item];
             break;
-        case HCCellItemTypePicker:
+        case YFCellItemTypePicker:
             [self presentPickerForItem:item];
             break;
-        case HCCellItemTypeAction:
+        case YFCellItemTypeAction:
             if (item.actionHandler) {
                 item.actionHandler(item);
                 [self.builder refreshSections:self.sections];

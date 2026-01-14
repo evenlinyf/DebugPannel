@@ -1,25 +1,25 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境面板 Builder 实现。
-#import "HCEnvPanelBuilder.h"
+#import "YFEnvPanelBuilder.h"
 
 #import "HCEnvKit.h"
-#import "HCEnvPanelViewController.h"
-#import "HCEnvSection.h"
-#import "HCCellItem.h"
-#import "HCValueHelpers.h"
+#import "YFEnvPanelViewController.h"
+#import "YFEnvSection.h"
+#import "YFCellItem.h"
+#import "YFValueHelpers.h"
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-NSString *const HCEnvItemIdEnvType = @"env.type";
-NSString *const HCEnvItemIdCluster = @"env.cluster";
-NSString *const HCEnvItemIdSaas = @"env.saas";
-NSString *const HCEnvItemIdIsolation = @"env.isolation";
-NSString *const HCEnvItemIdVersion = @"env.version";
-NSString *const HCEnvItemIdResult = @"env.result";
-NSString *const HCEnvItemIdElb = @"config.elb";
-NSString *const HCEnvItemIdSave = @"env.save";
-NSNotificationName const HCEnvPanelDidSaveNotification = @"HCEnvPanelDidSaveNotification";
+NSString *const YFEnvItemIdEnvType = @"env.type";
+NSString *const YFEnvItemIdCluster = @"env.cluster";
+NSString *const YFEnvItemIdSaas = @"env.saas";
+NSString *const YFEnvItemIdIsolation = @"env.isolation";
+NSString *const YFEnvItemIdVersion = @"env.version";
+NSString *const YFEnvItemIdResult = @"env.result";
+NSString *const YFEnvItemIdElb = @"config.elb";
+NSString *const YFEnvItemIdSave = @"env.save";
+NSNotificationName const YFEnvPanelDidSaveNotification = @"YFEnvPanelDidSaveNotification";
 
 static NSString *const kEnvItemStoreIsolation = @"HCEnvKit.isolation";
 static NSString *const kEnvItemStoreVersion = @"HCEnvKit.version";
@@ -29,15 +29,15 @@ static NSString *const kEnvItemStoreResult = @"HCEnvKit.result";
 static NSInteger const kEnvClusterMin = 1;
 static NSInteger const kEnvClusterMax = 20;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
-static const void *kHCEnvPanelExitObserverKey = &kHCEnvPanelExitObserverKey;
-static const void *kHCEnvPanelSnapshotKey = &kHCEnvPanelSnapshotKey;
+static const void *kYFEnvPanelExitObserverKey = &kYFEnvPanelExitObserverKey;
+static const void *kYFEnvPanelSnapshotKey = &kYFEnvPanelSnapshotKey;
 
-@interface HCEnvPanelChangeSnapshot ()
+@interface YFEnvPanelChangeSnapshot ()
 @property (nonatomic, strong) HCEnvConfig *config;
 @property (nonatomic, copy) NSDictionary<NSString *, id> *storeValues;
 @end
 
-@implementation HCEnvPanelChangeSnapshot
+@implementation YFEnvPanelChangeSnapshot
 
 - (instancetype)initWithConfig:(HCEnvConfig *)config storeValues:(NSDictionary<NSString *, id> *)storeValues {
     self = [super init];
@@ -81,11 +81,11 @@ static UIViewController *topViewController(void) {
     return top;
 }
 
-@interface HCEnvPanelExitObserver : NSObject
+@interface YFEnvPanelExitObserver : NSObject
 @property (nonatomic, strong) HCEnvConfig *initialConfig;
 @end
 
-@implementation HCEnvPanelExitObserver
+@implementation YFEnvPanelExitObserver
 
 - (instancetype)initWithInitialConfig:(HCEnvConfig *)initialConfig {
     self = [super init];
@@ -139,33 +139,33 @@ static BOOL isEnvConfigIdentifier(NSString *identifier) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         envConfigIdentifiers = [NSSet setWithArray:@[
-            HCEnvItemIdEnvType,
-            HCEnvItemIdCluster,
-            HCEnvItemIdIsolation,
-            HCEnvItemIdVersion,
-            HCEnvItemIdResult
+            YFEnvItemIdEnvType,
+            YFEnvItemIdCluster,
+            YFEnvItemIdIsolation,
+            YFEnvItemIdVersion,
+            YFEnvItemIdResult
         ]];
     });
     return [envConfigIdentifiers containsObject:identifier];
 }
 
-static HCCellItem *saveItemFromSections(NSArray<HCEnvSection *> *sections) {
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [HCEnvPanelBuilder indexItemsByIdFromSections:sections];
-    return itemsById[HCEnvItemIdSave];
+static YFCellItem *saveItemFromSections(NSArray<YFEnvSection *> *sections) {
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [YFEnvPanelBuilder indexItemsByIdFromSections:sections];
+    return itemsById[YFEnvItemIdSave];
 }
 
-static HCEnvPanelChangeSnapshot *snapshotForSections(NSArray<HCEnvSection *> *sections) {
-    return objc_getAssociatedObject(sections, kHCEnvPanelSnapshotKey);
+static YFEnvPanelChangeSnapshot *snapshotForSections(NSArray<YFEnvSection *> *sections) {
+    return objc_getAssociatedObject(sections, kYFEnvPanelSnapshotKey);
 }
 
-static void setSnapshotForSections(NSArray<HCEnvSection *> *sections, HCEnvPanelChangeSnapshot *snapshot) {
-    objc_setAssociatedObject(sections, kHCEnvPanelSnapshotKey, snapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+static void setSnapshotForSections(NSArray<YFEnvSection *> *sections, YFEnvPanelChangeSnapshot *snapshot) {
+    objc_setAssociatedObject(sections, kYFEnvPanelSnapshotKey, snapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
+static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    for (HCEnvSection *section in sections) {
-        for (HCCellItem *item in section.items) {
+    for (YFEnvSection *section in sections) {
+        for (YFCellItem *item in section.items) {
             if (item.storeKey.length == 0) {
                 continue;
             }
@@ -178,12 +178,12 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     }
 }
 
-@implementation HCEnvPanelBuilder
+@implementation YFEnvPanelBuilder
 
-- (NSArray<HCEnvSection *> *)buildSections {
-    NSArray<HCEnvSection *> *sections = [[self class] buildSections];
-    for (HCEnvSection *section in sections) {
-        for (HCCellItem *item in section.items) {
+- (NSArray<YFEnvSection *> *)buildSections {
+    NSArray<YFEnvSection *> *sections = [[self class] buildSections];
+    for (YFEnvSection *section in sections) {
+        for (YFCellItem *item in section.items) {
             if (item.storeKey.length == 0) {
                 continue;
             }
@@ -193,7 +193,7 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
             } else if (item.defaultValue) {
                 item.value = item.defaultValue;
             }
-            if (item.type == HCCellItemTypeEditableInfo) {
+            if (item.type == YFCellItemTypeEditableInfo) {
                 item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
             }
         }
@@ -205,28 +205,28 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     return sections;
 }
 
-- (void)refreshSections:(NSArray<HCEnvSection *> *)sections {
+- (void)refreshSections:(NSArray<YFEnvSection *> *)sections {
     [[self class] refreshSections:sections];
     [[self class] updateSaveItemVisibilityInSections:sections];
 }
 
-+ (NSArray<HCEnvSection *> *)buildSections {
-    HCEnvSection *envSection = [self buildEnvSection];
-    HCEnvSection *configSection = [self buildConfigSection];
++ (NSArray<YFEnvSection *> *)buildSections {
+    YFEnvSection *envSection = [self buildEnvSection];
+    YFEnvSection *configSection = [self buildConfigSection];
     return @[envSection, configSection];
 }
 
 + (UIViewController *)buildPanelViewController {
-    HCEnvPanelViewController *controller = [[HCEnvPanelViewController alloc] initWithBuilder:[[HCEnvPanelBuilder alloc] init]];
-    HCEnvPanelExitObserver *observer = [[HCEnvPanelExitObserver alloc] initWithInitialConfig:[HCEnvKit currentConfig]];
-    objc_setAssociatedObject(controller, kHCEnvPanelExitObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    YFEnvPanelViewController *controller = [[YFEnvPanelViewController alloc] initWithBuilder:[[YFEnvPanelBuilder alloc] init]];
+    YFEnvPanelExitObserver *observer = [[YFEnvPanelExitObserver alloc] initWithInitialConfig:[HCEnvKit currentConfig]];
+    objc_setAssociatedObject(controller, kYFEnvPanelExitObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return controller;
 }
 
-+ (NSDictionary<NSString *, HCCellItem *> *)indexItemsByIdFromSections:(NSArray<HCEnvSection *> *)sections {
-    NSMutableDictionary<NSString *, HCCellItem *> *itemsById = [NSMutableDictionary dictionary];
-    for (HCEnvSection *section in sections) {
-        for (HCCellItem *item in section.items) {
++ (NSDictionary<NSString *, YFCellItem *> *)indexItemsByIdFromSections:(NSArray<YFEnvSection *> *)sections {
+    NSMutableDictionary<NSString *, YFCellItem *> *itemsById = [NSMutableDictionary dictionary];
+    for (YFEnvSection *section in sections) {
+        for (YFCellItem *item in section.items) {
             if (item.identifier.length > 0) {
                 itemsById[item.identifier] = item;
             }
@@ -235,10 +235,10 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     return [itemsById copy];
 }
 
-+ (void)refreshSections:(NSArray<HCEnvSection *> *)sections {
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
-    for (HCEnvSection *section in sections) {
-        for (HCCellItem *item in section.items) {
++ (void)refreshSections:(NSArray<YFEnvSection *> *)sections {
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    for (YFEnvSection *section in sections) {
+        for (YFCellItem *item in section.items) {
             if (item.recomputeBlock) {
                 item.recomputeBlock(item, itemsById);
             }
@@ -246,16 +246,16 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     }
 }
 
-+ (HCEnvConfig *)configFromSections:(NSArray<HCEnvSection *> *)sections {
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
++ (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections {
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
     return [self configFromItems:itemsById];
 }
 
-+ (HCEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<HCEnvSection *> *)sections {
++ (YFEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<YFEnvSection *> *)sections {
     HCEnvConfig *config = [self configFromSections:sections];
     NSMutableDictionary<NSString *, id> *values = [NSMutableDictionary dictionary];
-    for (HCEnvSection *section in sections) {
-        for (HCCellItem *item in section.items) {
+    for (YFEnvSection *section in sections) {
+        for (YFCellItem *item in section.items) {
             if (item.storeKey.length == 0 || isEnvConfigIdentifier(item.identifier)) {
                 continue;
             }
@@ -265,10 +265,10 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
             values[item.identifier] = item.value ?: [NSNull null];
         }
     }
-    return [[HCEnvPanelChangeSnapshot alloc] initWithConfig:config storeValues:values];
+    return [[YFEnvPanelChangeSnapshot alloc] initWithConfig:config storeValues:values];
 }
 
-+ (BOOL)sections:(NSArray<HCEnvSection *> *)sections differFromSnapshot:(HCEnvPanelChangeSnapshot *)snapshot {
++ (BOOL)sections:(NSArray<YFEnvSection *> *)sections differFromSnapshot:(YFEnvPanelChangeSnapshot *)snapshot {
     if (!snapshot) {
         return NO;
     }
@@ -276,9 +276,9 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     if (![currentConfig isEqual:snapshot.config]) {
         return YES;
     }
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
     for (NSString *identifier in snapshot.storeValues) {
-        HCCellItem *item = itemsById[identifier];
+        YFCellItem *item = itemsById[identifier];
         if (!item) {
             continue;
         }
@@ -291,14 +291,14 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     return NO;
 }
 
-+ (void)configureSaveActionForSections:(NSArray<HCEnvSection *> *)sections onSave:(dispatch_block_t)onSave {
-    HCCellItem *saveItem = saveItemFromSections(sections);
++ (void)configureSaveActionForSections:(NSArray<YFEnvSection *> *)sections onSave:(dispatch_block_t)onSave {
+    YFCellItem *saveItem = saveItemFromSections(sections);
     if (!saveItem) {
         return;
     }
-    __weak NSArray<HCEnvSection *> *weakSections = sections;
-    saveItem.actionHandler = ^(HCCellItem *item) {
-        NSArray<HCEnvSection *> *strongSections = weakSections;
+    __weak NSArray<YFEnvSection *> *weakSections = sections;
+    saveItem.actionHandler = ^(YFCellItem *item) {
+        NSArray<YFEnvSection *> *strongSections = weakSections;
         if (!strongSections) {
             return;
         }
@@ -310,12 +310,12 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
         if (onSave) {
             onSave();
         }
-        [[NSNotificationCenter defaultCenter] postNotificationName:HCEnvPanelDidSaveNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:YFEnvPanelDidSaveNotification object:nil];
     };
 }
 
-+ (void)updateSaveItemVisibilityInSections:(NSArray<HCEnvSection *> *)sections {
-    HCCellItem *saveItem = saveItemFromSections(sections);
++ (void)updateSaveItemVisibilityInSections:(NSArray<YFEnvSection *> *)sections {
+    YFCellItem *saveItem = saveItemFromSections(sections);
     if (!saveItem) {
         return;
     }
@@ -324,33 +324,33 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     saveItem.enabled = pending;
 }
 
-+ (void)captureBaselineForSections:(NSArray<HCEnvSection *> *)sections {
-    HCEnvPanelChangeSnapshot *snapshot = [self changeSnapshotFromSections:sections];
++ (void)captureBaselineForSections:(NSArray<YFEnvSection *> *)sections {
+    YFEnvPanelChangeSnapshot *snapshot = [self changeSnapshotFromSections:sections];
     setSnapshotForSections(sections, snapshot);
 }
 
 /// 如何新增配置项（重要）：
-/// 1. 在本文件顶部新增常量标识（如 HCEnvItemIdXXX）与持久化 key（如 kEnvItemStoreXXX）。
-/// 2. 在 buildEnvSection 中创建 HCCellItem，补充 title、type、storeKey/defaultValue、dependsOn 和 recomputeBlock。
+/// 1. 在本文件顶部新增常量标识（如 YFEnvItemIdXXX）与持久化 key（如 kEnvItemStoreXXX）。
+/// 2. 在 buildEnvSection 中创建 YFCellItem，补充 title、type、storeKey/defaultValue、dependsOn 和 recomputeBlock。
 /// 3. 在 configFromItems 中读取新字段，映射到 HCEnvConfig 属性，并在 HCEnvKit 中持久化该属性。
 /// 4. 如需影响联动显示，确保将新项加入 result 的 dependsOn 列表，并在 recomputeBlock 中刷新 detail/title。
-+ (HCEnvSection *)buildEnvSection {
++ (YFEnvSection *)buildEnvSection {
     HCEnvConfig *config = [HCEnvKit currentConfig];
 
     // 环境类型：用 segment 统一管理。
     NSArray<NSString *> *envOptions = @[@"线上", @"uat", @"dev", @"自定义"];
-    HCCellItem *envType = [HCCellItem segmentItemWithIdentifier:HCEnvItemIdEnvType
+    YFCellItem *envType = [YFCellItem segmentItemWithIdentifier:YFEnvItemIdEnvType
                                                           title:@"环境类型"
                                                         options:envOptions
                                                    defaultValue:@(config.envType)];
     envType.value = @(config.envType);
 
     // 环境编号：需要根据 envType 切换持久化 key。
-    HCCellItem *cluster = [HCCellItem stepperItemWithIdentifier:HCEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin] minimum:1 maximum:20];
+    YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin] minimum:1 maximum:20];
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
     cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
     cluster.disabledHint = @"仅 uat/dev 可用";
-    cluster.dependsOn = @[HCEnvItemIdEnvType];
+    cluster.dependsOn = @[YFEnvItemIdEnvType];
     cluster.validator = ^NSString *(NSString *input) {
         if (input.length == 0) {
             return @"环境编号不能为空";
@@ -366,9 +366,9 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
         }
         return nil;
     };
-    cluster.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        HCEnvType envTypeValue = HCIntValue(envItem.value);
+    cluster.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+        HCEnvType envTypeValue = YFIntValue(envItem.value);
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreCluster, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
@@ -378,23 +378,23 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
         item.hidden = (envTypeValue == HCEnvTypeRelease || envTypeValue == HCEnvTypeCustom);
-        NSInteger current = MAX(kEnvClusterMin, HCIntValue(item.value));
+        NSInteger current = MAX(kEnvClusterMin, YFIntValue(item.value));
         current = MIN(kEnvClusterMax, current);
         item.value = [NSString stringWithFormat:@"%ld", (long)current];
         item.detail = item.value;
     };
 
     // Saas 环境：根据 cluster 自动生成默认值，仍允许手动编辑。
-    HCCellItem *saas = [HCCellItem stringItemWithIdentifier:HCEnvItemIdSaas
+    YFCellItem *saas = [YFCellItem stringItemWithIdentifier:YFEnvItemIdSaas
                                                       title:@"Saas 环境"
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
                                                defaultValue:nil];
     saas.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster];
     saas.disabledHint = @"仅 uat/dev 可用";
-    saas.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster];
-    saas.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        HCEnvType envTypeValue = HCIntValue(envItem.value);
+    saas.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster];
+    saas.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+        HCEnvType envTypeValue = YFIntValue(envItem.value);
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreSaas, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
@@ -403,13 +403,13 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
             if (stored) {
                 item.value = stored;
             } else {
-                NSInteger clusterValue = MAX(kEnvClusterMin, HCIntValue(itemsById[HCEnvItemIdCluster].value));
+                NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
                 item.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
             }
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
         item.hidden = (envTypeValue == HCEnvTypeRelease);
-        NSInteger clusterValue = MAX(kEnvClusterMin, HCIntValue(itemsById[HCEnvItemIdCluster].value));
+        NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
         if ([item.value isKindOfClass:[NSString class]]) {
             NSString *current = item.value;
@@ -427,16 +427,16 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     };
 
     // 隔离参数：不同环境类型各自持久化。
-    HCCellItem *isolation = [HCCellItem stringItemWithIdentifier:HCEnvItemIdIsolation
+    YFCellItem *isolation = [YFCellItem stringItemWithIdentifier:YFEnvItemIdIsolation
                                                            title:@"隔离参数"
                                                         storeKey:storeKeyForEnvType(kEnvItemStoreIsolation, config.envType)
                                                     defaultValue:@""];
     isolation.value = config.isolation;
     isolation.disabledHint = @"仅 uat/dev 可用";
-    isolation.dependsOn = @[HCEnvItemIdEnvType];
-    isolation.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        HCEnvType envTypeValue = HCIntValue(envItem.value);
+    isolation.dependsOn = @[YFEnvItemIdEnvType];
+    isolation.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+        HCEnvType envTypeValue = YFIntValue(envItem.value);
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreIsolation, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
@@ -449,16 +449,16 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     };
 
     // 版本号：不同环境类型各自持久化。
-    HCCellItem *version = [HCCellItem stringItemWithIdentifier:HCEnvItemIdVersion
+    YFCellItem *version = [YFCellItem stringItemWithIdentifier:YFEnvItemIdVersion
                                                          title:@"版本号"
                                                       storeKey:storeKeyForEnvType(kEnvItemStoreVersion, config.envType)
                                                   defaultValue:@"v1"];
     version.value = config.version;
     version.disabledHint = @"仅 uat/dev 可用";
-    version.dependsOn = @[HCEnvItemIdEnvType];
-    version.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
-        HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-        HCEnvType envTypeValue = HCIntValue(envItem.value);
+    version.dependsOn = @[YFEnvItemIdEnvType];
+    version.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+        HCEnvType envTypeValue = YFIntValue(envItem.value);
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreVersion, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
@@ -471,14 +471,14 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     };
 
     // Final URL：自定义环境可编辑，其余环境根据配置自动生成。
-    HCCellItem *result = [HCCellItem editableInfoItemWithIdentifier:HCEnvItemIdResult
+    YFCellItem *result = [YFCellItem editableInfoItemWithIdentifier:YFEnvItemIdResult
                                                                title:@"Final URL"
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
                                                         defaultValue:@""];
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
-    result.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdVersion, HCEnvItemIdIsolation];
-    result.recomputeBlock = ^(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById) {
+    result.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdVersion, YFEnvItemIdIsolation];
+    result.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
         NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
@@ -503,15 +503,15 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
         item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
     };
 
-    HCCellItem *save = [HCCellItem actionItemWithIdentifier:HCEnvItemIdSave title:@"保存" handler:nil];
+    YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];
     save.hidden = YES;
-    save.dependsOn = @[HCEnvItemIdEnvType, HCEnvItemIdCluster, HCEnvItemIdIsolation, HCEnvItemIdVersion, HCEnvItemIdResult];
+    save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdIsolation, YFEnvItemIdVersion, YFEnvItemIdResult];
 
-    NSArray<HCCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
-    HCEnvSection *section = [HCEnvSection sectionWithTitle:@"环境配置" items:items];
+    NSArray<YFCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
+    YFEnvSection *section = [YFEnvSection sectionWithTitle:@"环境配置" items:items];
 
-    NSDictionary<NSString *, HCCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
-    for (HCCellItem *item in items) {
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
+    for (YFCellItem *item in items) {
         if (item.recomputeBlock) {
             item.recomputeBlock(item, itemsById);
         }
@@ -520,27 +520,27 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
     return section;
 }
 
-+ (HCEnvSection *)buildConfigSection {
++ (YFEnvSection *)buildConfigSection {
     // ELB 开关：常规布尔持久化配置项。
-    HCCellItem *elb = [HCCellItem switchItemWithIdentifier:HCEnvItemIdElb
+    YFCellItem *elb = [YFCellItem switchItemWithIdentifier:YFEnvItemIdElb
                                                      title:@"ELB 开关"
                                                   storeKey:@"elbconfig"
                                               defaultValue:@(YES)];
     elb.detail = @"如果不需要获取动态域名， 请关闭开关";
 
-    NSArray<HCCellItem *> *items = @[elb];
-    return [HCEnvSection sectionWithTitle:@"配置" items:items];
+    NSArray<YFCellItem *> *items = @[elb];
+    return [YFEnvSection sectionWithTitle:@"配置" items:items];
 }
 
-+ (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, HCCellItem *> *)itemsById {
++ (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById {
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
-    HCCellItem *envItem = itemsById[HCEnvItemIdEnvType];
-    HCCellItem *clusterItem = itemsById[HCEnvItemIdCluster];
-    HCCellItem *isolationItem = itemsById[HCEnvItemIdIsolation];
-    HCCellItem *versionItem = itemsById[HCEnvItemIdVersion];
-    HCCellItem *resultItem = itemsById[HCEnvItemIdResult];
-    config.envType = HCIntValue(envItem.value);
-    NSInteger clusterValue = MAX(kEnvClusterMin, HCIntValue(clusterItem.value));
+    YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+    YFCellItem *clusterItem = itemsById[YFEnvItemIdCluster];
+    YFCellItem *isolationItem = itemsById[YFEnvItemIdIsolation];
+    YFCellItem *versionItem = itemsById[YFEnvItemIdVersion];
+    YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
+    config.envType = YFIntValue(envItem.value);
+    NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(clusterItem.value));
     clusterValue = MIN(kEnvClusterMax, clusterValue);
     config.clusterIndex = clusterValue;
     config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";

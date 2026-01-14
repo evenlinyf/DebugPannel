@@ -1,9 +1,9 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板分组 section 模型实现。
-#import "HCEnvSection.h"
+#import "YFEnvSection.h"
 
-@implementation HCEnvSection
+@implementation YFEnvSection
 
 - (instancetype)initWithTitle:(NSString *)title items:(NSArray *)items {
     self = [super init];
@@ -15,7 +15,7 @@
 }
 
 + (instancetype)sectionWithTitle:(NSString *)title items:(NSArray *)items {
-    return [[HCEnvSection alloc] initWithTitle:title items:items];
+    return [[YFEnvSection alloc] initWithTitle:title items:items];
 }
 
 @end

@@ -1,15 +1,15 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板开关 cell 实现。
-#import "HCSwitchCell.h"
-#import "HCCellItem.h"
-#import "HCValueHelpers.h"
+#import "YFSwitchCell.h"
+#import "YFCellItem.h"
+#import "YFValueHelpers.h"
 
-@interface HCSwitchCell ()
+@interface YFSwitchCell ()
 @property (nonatomic, strong) UISwitch *toggle;
 @end
 
-@implementation HCSwitchCell
+@implementation YFSwitchCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
@@ -22,9 +22,9 @@
     return self;
 }
 
-- (void)configureWithItem:(HCCellItem *)item {
+- (void)configureWithItem:(YFCellItem *)item {
     self.textLabel.text = item.title;
-    self.toggle.on = HCBoolValue(item.value);
+    self.toggle.on = YFBoolValue(item.value);
     self.toggle.enabled = item.enabled;
 }
 

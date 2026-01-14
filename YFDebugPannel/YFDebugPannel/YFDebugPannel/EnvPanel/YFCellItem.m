@@ -1,15 +1,15 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板 cell 数据模型实现。
-#import "HCCellItem.h"
+#import "YFCellItem.h"
 
-@interface HCCellItem ()
+@interface YFCellItem ()
 @property (nonatomic, copy) NSString *identifier;
 @end
 
-@implementation HCCellItem
+@implementation YFCellItem
 
-- (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type {
+- (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type {
     self = [super init];
     if (self) {
         _identifier = [identifier copy];
@@ -23,8 +23,8 @@
     return self;
 }
 
-+ (instancetype)itemWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type {
-    return [[HCCellItem alloc] initWithIdentifier:identifier title:title type:type];
++ (instancetype)itemWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type {
+    return [[YFCellItem alloc] initWithIdentifier:identifier title:title type:type];
 }
 
 // 工厂方法负责填充可持久化字段，避免调用方重复配置。
@@ -32,7 +32,7 @@
                                    title:(NSString *)title
                                 storeKey:(NSString *)storeKey
                             defaultValue:(id)defaultValue {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeSwitch];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeSwitch];
     item.storeKey = storeKey ?: @"";
     item.defaultValue = defaultValue;
     return item;
@@ -43,7 +43,7 @@
                                    title:(NSString *)title
                                 storeKey:(NSString *)storeKey
                             defaultValue:(id)defaultValue {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeString];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeString];
     item.storeKey = storeKey ?: @"";
     item.defaultValue = defaultValue;
     return item;
@@ -56,7 +56,7 @@
                              defaultValue:(id)defaultValue
                                   minimum:(NSInteger)minimum
                                   maximum:(NSInteger)maximum {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeStepper];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeStepper];
     item.storeKey = storeKey ?: @"";
     item.defaultValue = defaultValue;
     item.stepperMin = minimum;
@@ -64,8 +64,8 @@
     return item;
 }
 
-+ (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(HCCellItemActionHandler)handler {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeAction];
++ (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(YFCellItemActionHandler)handler {
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeAction];
     item.actionHandler = handler;
     return item;
 }
@@ -75,7 +75,7 @@
                                     title:(NSString *)title
                                   options:(NSArray<NSString *> *)options
                              defaultValue:(id)defaultValue {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeSegment];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeSegment];
     item.options = options;
     item.defaultValue = defaultValue;
     if (defaultValue) {
@@ -90,7 +90,7 @@
                                 storeKey:(NSString *)storeKey
                             defaultValue:(id)defaultValue
                                  options:(NSArray<NSString *> *)options {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypePicker];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypePicker];
     item.storeKey = storeKey ?: @"";
     item.defaultValue = defaultValue;
     item.options = options;
@@ -100,7 +100,7 @@
 + (instancetype)infoItemWithIdentifier:(NSString *)identifier
                                  title:(NSString *)title
                                 detail:(NSString *)detail {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeInfo];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeInfo];
     item.detail = detail;
     return item;
 }
@@ -110,7 +110,7 @@
                                          title:(NSString *)title
                                       storeKey:(NSString *)storeKey
                                   defaultValue:(id)defaultValue {
-    HCCellItem *item = [self itemWithIdentifier:identifier title:title type:HCCellItemTypeEditableInfo];
+    YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeEditableInfo];
     item.storeKey = storeKey ?: @"";
     item.defaultValue = defaultValue;
     return item;

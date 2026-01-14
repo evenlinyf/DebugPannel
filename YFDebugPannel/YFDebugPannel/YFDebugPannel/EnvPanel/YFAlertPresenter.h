@@ -6,21 +6,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^HCAlertTextHandler)(NSString *input);
-typedef void (^HCAlertOptionHandler)(NSString *option);
+typedef void (^YFAlertTextHandler)(NSString *input);
+typedef void (^YFAlertOptionHandler)(NSString *option);
 
-@interface HCAlertPresenter : NSObject
+@interface YFAlertPresenter : NSObject
 
 + (UIAlertController *)textInputAlertWithTitle:(nullable NSString *)title
                                       message:(nullable NSString *)message
                                   initialText:(nullable NSString *)initialText
-                               confirmHandler:(nullable HCAlertTextHandler)confirmHandler;
+                               confirmHandler:(nullable YFAlertTextHandler)confirmHandler;
 
 + (UIAlertController *)actionSheetWithTitle:(nullable NSString *)title
                                     message:(nullable NSString *)message
                                     options:(NSArray<NSString *> *)options
                                  sourceView:(UIView *)sourceView
-                           selectionHandler:(nullable HCAlertOptionHandler)selectionHandler;
+                           selectionHandler:(nullable YFAlertOptionHandler)selectionHandler;
 
 + (void)presentToastFrom:(UIViewController *)presenter
                  message:(nullable NSString *)message
