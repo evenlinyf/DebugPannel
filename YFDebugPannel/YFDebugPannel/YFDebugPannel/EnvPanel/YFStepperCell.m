@@ -1,16 +1,16 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板步进器 cell 实现。
-#import "HCStepperCell.h"
-#import "HCCellItem.h"
-#import "HCValueHelpers.h"
+#import "YFStepperCell.h"
+#import "YFCellItem.h"
+#import "YFValueHelpers.h"
 
-@interface HCStepperCell ()
+@interface YFStepperCell ()
 @property (nonatomic, strong) UIStepper *stepper;
 @property (nonatomic, strong) UIStackView *stackView;
 @end
 
-@implementation HCStepperCell
+@implementation YFStepperCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
@@ -25,7 +25,7 @@
     return self;
 }
 
-- (void)configureWithItem:(HCCellItem *)item minimum:(NSInteger)minimum maximum:(NSInteger)maximum {
+- (void)configureWithItem:(YFCellItem *)item minimum:(NSInteger)minimum maximum:(NSInteger)maximum {
     self.textLabel.text = item.title;
     self.detailTextLabel.text = item.detail;
     self.stepper.minimumValue = minimum;
@@ -34,7 +34,7 @@
     UIColor *labelColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
     self.textLabel.textColor = labelColor;
     self.detailTextLabel.textColor = UIColor.secondaryLabelColor;
-    NSInteger value = HCIntValue(item.value);
+    NSInteger value = YFIntValue(item.value);
     self.stepper.value = value;
     self.stepper.enabled = item.enabled;
 }

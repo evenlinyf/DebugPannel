@@ -1,15 +1,15 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：调试面板分段选择 cell 实现。
-#import "HCSegmentCell.h"
-#import "HCCellItem.h"
-#import "HCValueHelpers.h"
+#import "YFSegmentCell.h"
+#import "YFCellItem.h"
+#import "YFValueHelpers.h"
 
-@interface HCSegmentCell ()
+@interface YFSegmentCell ()
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @end
 
-@implementation HCSegmentCell
+@implementation YFSegmentCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
@@ -22,7 +22,7 @@
     return self;
 }
 
-- (void)configureWithItem:(HCCellItem *)item {
+- (void)configureWithItem:(YFCellItem *)item {
     self.textLabel.text = item.title;
     self.segmentedControl.enabled = item.enabled;
     [self.segmentedControl removeAllSegments];
@@ -30,7 +30,7 @@
     [options enumerateObjectsUsingBlock:^(NSString *title, NSUInteger idx, BOOL *stop) {
         [self.segmentedControl insertSegmentWithTitle:title atIndex:idx animated:NO];
     }];
-    NSInteger index = HCIntValue(item.value);
+    NSInteger index = YFIntValue(item.value);
     if (index >= 0 && index < self.segmentedControl.numberOfSegments) {
         self.segmentedControl.selectedSegmentIndex = index;
     }

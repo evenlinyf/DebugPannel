@@ -5,25 +5,25 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, HCCellItemType) {
-    HCCellItemTypeSwitch,
-    HCCellItemTypeString,
-    HCCellItemTypeStepper,
-    HCCellItemTypeAction,
-    HCCellItemTypeSegment,
-    HCCellItemTypePicker,
-    HCCellItemTypeInfo,
-    HCCellItemTypeEditableInfo
+typedef NS_ENUM(NSInteger, YFCellItemType) {
+    YFCellItemTypeSwitch,
+    YFCellItemTypeString,
+    YFCellItemTypeStepper,
+    YFCellItemTypeAction,
+    YFCellItemTypeSegment,
+    YFCellItemTypePicker,
+    YFCellItemTypeInfo,
+    YFCellItemTypeEditableInfo
 };
 
-@class HCCellItem;
+@class YFCellItem;
 
-typedef void (^HCCellItemRecomputeBlock)(HCCellItem *item, NSDictionary<NSString *, HCCellItem *> *itemsById);
-typedef NSString * _Nullable (^HCCellItemValidator)(NSString *input);
-typedef void (^HCCellItemValueTransformer)(HCCellItem *item);
-typedef void (^HCCellItemActionHandler)(HCCellItem *item);
+typedef void (^YFCellItemRecomputeBlock)(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById);
+typedef NSString * _Nullable (^YFCellItemValidator)(NSString *input);
+typedef void (^YFCellItemValueTransformer)(YFCellItem *item);
+typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 
-@interface HCCellItem : NSObject
+@interface YFCellItem : NSObject
 @property (nonatomic, copy, readonly) NSString *identifier;
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic, copy) NSString *detail;
@@ -32,7 +32,7 @@ typedef void (^HCCellItemActionHandler)(HCCellItem *item);
 @property (nonatomic, assign) BOOL hidden;
 @property (nonatomic, copy) NSString *disabledHint;
 
-@property (nonatomic, assign) HCCellItemType type;
+@property (nonatomic, assign) YFCellItemType type;
 @property (nonatomic, strong) id value;
 
 @property (nonatomic, assign) NSInteger stepperMin;
@@ -43,14 +43,14 @@ typedef void (^HCCellItemActionHandler)(HCCellItem *item);
 
 @property (nonatomic, copy) NSArray<NSString *> *options;
 @property (nonatomic, copy) NSArray<NSString *> *dependsOn;
-@property (nonatomic, copy) HCCellItemRecomputeBlock recomputeBlock;
+@property (nonatomic, copy) YFCellItemRecomputeBlock recomputeBlock;
 
-@property (nonatomic, copy) HCCellItemValidator validator;
-@property (nonatomic, copy) HCCellItemValueTransformer valueTransformer;
-@property (nonatomic, copy) HCCellItemActionHandler actionHandler;
+@property (nonatomic, copy) YFCellItemValidator validator;
+@property (nonatomic, copy) YFCellItemValueTransformer valueTransformer;
+@property (nonatomic, copy) YFCellItemActionHandler actionHandler;
 
-- (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type;
-+ (instancetype)itemWithIdentifier:(NSString *)identifier title:(NSString *)title type:(HCCellItemType)type;
+- (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type;
++ (instancetype)itemWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type;
 
 /// 创建 Switch 类型 item，并设置持久化 key / 默认值。
 + (instancetype)switchItemWithIdentifier:(NSString *)identifier
@@ -70,7 +70,7 @@ typedef void (^HCCellItemActionHandler)(HCCellItem *item);
                                minimum:(NSInteger)minimum
                                maximum:(NSInteger)maximum;
 /// 创建 Action 类型 item，并绑定点击回调。
-+ (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(nullable HCCellItemActionHandler)handler;
++ (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(nullable YFCellItemActionHandler)handler;
 /// 创建 Segment 类型 item，并设置选项 / 默认值。
 + (instancetype)segmentItemWithIdentifier:(NSString *)identifier
                                     title:(NSString *)title

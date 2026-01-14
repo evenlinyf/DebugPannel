@@ -1,14 +1,14 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：封装 AlertController 创建与展示的工具类。
-#import "HCAlertPresenter.h"
+#import "YFAlertPresenter.h"
 
-@implementation HCAlertPresenter
+@implementation YFAlertPresenter
 
 + (UIAlertController *)textInputAlertWithTitle:(NSString *)title
                                       message:(NSString *)message
                                   initialText:(NSString *)initialText
-                               confirmHandler:(HCAlertTextHandler)confirmHandler {
+                               confirmHandler:(YFAlertTextHandler)confirmHandler {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:message
                                                             preferredStyle:UIAlertControllerStyleAlert];
@@ -31,7 +31,7 @@
                                     message:(NSString *)message
                                     options:(NSArray<NSString *> *)options
                                  sourceView:(UIView *)sourceView
-                           selectionHandler:(HCAlertOptionHandler)selectionHandler {
+                           selectionHandler:(YFAlertOptionHandler)selectionHandler {
     UIAlertController *sheet = [UIAlertController alertControllerWithTitle:title
                                                                    message:message
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
