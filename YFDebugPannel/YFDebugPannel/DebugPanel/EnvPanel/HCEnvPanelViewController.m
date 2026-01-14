@@ -14,6 +14,7 @@
 @interface HCEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, copy) NSArray<HCEnvSection *> *sections;
+@property (nonatomic, strong) id<HCEnvPanelBuilding> builder;
 @end
 
 @implementation HCEnvPanelViewController
@@ -31,13 +32,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     self.title = @"调试面板";
     self.view.backgroundColor = UIColor.systemBackgroundColor;
 
-    self.sections = [HCEnvPanelBuilder buildSections];
-    [self loadPersistedValues];
-    [HCEnvPanelBuilder refreshSections:self.sections];
-    __weak typeof(self) weakSelf = self;
-    [HCEnvPanelBuilder configureSaveActionForSections:self.sections onSave:^{
-        [weakSelf.tableView reloadData];
-    }];
+    self.sections = [self.builder buildSections];
+    [self.builder refreshSections:self.sections];
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
@@ -57,9 +53,6 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
         [self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
     ]];
 
-    [HCEnvPanelBuilder captureBaselineForSections:self.sections];
-    [HCEnvPanelBuilder updateSaveItemVisibilityInSections:self.sections];
-
     if (self.presentingViewController) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"关闭" style:UIBarButtonItemStylePlain target:self action:@selector(closeTapped)];
     }
@@ -67,6 +60,18 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
 
 - (void)closeTapped {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (instancetype)initWithBuilder:(id<HCEnvPanelBuilding>)builder {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _builder = builder ?: [[HCEnvPanelBuilder alloc] init];
+    }
+    return self;
+}
+
+- (instancetype)init {
+    return [self initWithBuilder:[[HCEnvPanelBuilder alloc] init]];
 }
 
 - (void)applyValue:(id)value forItem:(HCCellItem *)item {
@@ -77,8 +82,7 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
     if (item.valueTransformer) {
         item.valueTransformer(item);
     }
-    [HCEnvPanelBuilder refreshSections:self.sections];
-    [HCEnvPanelBuilder updateSaveItemVisibilityInSections:self.sections];
+    [self.builder refreshSections:self.sections];
     [self.tableView reloadData];
 }
 
@@ -120,25 +124,6 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
         return;
     }
     [HCAlertPresenter presentToastFrom:self message:request.title duration:1.0];
-}
-
-- (void)loadPersistedValues {
-    for (HCEnvSection *section in self.sections) {
-        for (HCCellItem *item in section.items) {
-            if (item.storeKey.length == 0) {
-                continue;
-            }
-            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
-            if (stored) {
-                item.value = stored;
-            } else if (item.defaultValue) {
-                item.value = item.defaultValue;
-            }
-            if (item.type == HCCellItemTypeEditableInfo) {
-                item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
-            }
-        }
-    }
 }
 
 - (HCCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
@@ -291,6 +276,8 @@ static NSString *const kHCEditableInfoCellId = @"HCEditableInfoCell";
         case HCCellItemTypeAction:
             if (item.actionHandler) {
                 item.actionHandler(item);
+                [self.builder refreshSections:self.sections];
+                [self.tableView reloadData];
             } else {
                 [self applyValue:item.value forItem:item];
             }

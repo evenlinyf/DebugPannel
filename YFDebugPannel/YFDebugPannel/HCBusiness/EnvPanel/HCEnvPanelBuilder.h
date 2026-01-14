@@ -12,10 +12,15 @@
 FOUNDATION_EXPORT NSString *const HCEnvItemIdSave;
 FOUNDATION_EXPORT NSNotificationName const HCEnvPanelDidSaveNotification;
 
+@protocol HCEnvPanelBuilding <NSObject>
+- (NSArray<HCEnvSection *> *)buildSections;
+- (void)refreshSections:(NSArray<HCEnvSection *> *)sections;
+@end
+
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：构建 DebugPannel 页面所需的区块与配置能力。
-@interface HCEnvPanelBuilder : NSObject
+@interface HCEnvPanelBuilder : NSObject <HCEnvPanelBuilding>
 /// 构建默认的面板区块（环境配置 + 配置区块）。
 + (NSArray<HCEnvSection *> *)buildSections;
 /// 快速构建默认的 DebugPannel 页面控制器。
