@@ -180,6 +180,36 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
 
 @implementation HCEnvPanelBuilder
 
+- (NSArray<HCEnvSection *> *)buildSections {
+    NSArray<HCEnvSection *> *sections = [[self class] buildSections];
+    for (HCEnvSection *section in sections) {
+        for (HCCellItem *item in section.items) {
+            if (item.storeKey.length == 0) {
+                continue;
+            }
+            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
+            if (stored) {
+                item.value = stored;
+            } else if (item.defaultValue) {
+                item.value = item.defaultValue;
+            }
+            if (item.type == HCCellItemTypeEditableInfo) {
+                item.detail = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
+            }
+        }
+    }
+    [[self class] refreshSections:sections];
+    [[self class] configureSaveActionForSections:sections onSave:nil];
+    [[self class] captureBaselineForSections:sections];
+    [[self class] updateSaveItemVisibilityInSections:sections];
+    return sections;
+}
+
+- (void)refreshSections:(NSArray<HCEnvSection *> *)sections {
+    [[self class] refreshSections:sections];
+    [[self class] updateSaveItemVisibilityInSections:sections];
+}
+
 + (NSArray<HCEnvSection *> *)buildSections {
     HCEnvSection *envSection = [self buildEnvSection];
     HCEnvSection *configSection = [self buildConfigSection];
@@ -187,7 +217,7 @@ static void persistAllItemsInSections(NSArray<HCEnvSection *> *sections) {
 }
 
 + (UIViewController *)buildPanelViewController {
-    HCEnvPanelViewController *controller = [[HCEnvPanelViewController alloc] init];
+    HCEnvPanelViewController *controller = [[HCEnvPanelViewController alloc] initWithBuilder:[[HCEnvPanelBuilder alloc] init]];
     HCEnvPanelExitObserver *observer = [[HCEnvPanelExitObserver alloc] initWithInitialConfig:[HCEnvKit currentConfig]];
     objc_setAssociatedObject(controller, kHCEnvPanelExitObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return controller;
