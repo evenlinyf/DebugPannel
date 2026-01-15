@@ -5,7 +5,6 @@
 #import "YFEnvPanelBuilder.h"
 #import "YFCellItem.h"
 #import "YFEnvSection.h"
-#import "YFPresentationRequest.h"
 #import "YFSegmentCell.h"
 #import "YFSwitchCell.h"
 #import "YFStepperCell.h"
@@ -97,7 +96,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
         if (item.validator) {
             NSString *errorMessage = item.validator(text);
             if (errorMessage.length > 0) {
-                [weakSelf presentRequest:[YFPresentationRequest toastWithMessage:errorMessage]];
+                [YFAlertPresenter presentToastFrom:weakSelf message:errorMessage duration:1.0];
                 return;
             }
         }
@@ -117,13 +116,6 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
         [weakSelf applyValue:option forItem:item];
     }];
     [self presentViewController:sheet animated:YES completion:nil];
-}
-
-- (void)presentRequest:(YFPresentationRequest *)request {
-    if (request.type != YFPresentationTypeToast) {
-        return;
-    }
-    [YFAlertPresenter presentToastFrom:self message:request.title duration:1.0];
 }
 
 - (YFCellItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
@@ -262,7 +254,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     YFCellItem *item = [self itemAtIndexPath:indexPath];
     if (!item.enabled) {
         NSString *message = item.disabledHint.length > 0 ? item.disabledHint : @"当前不可用";
-        [self presentRequest:[YFPresentationRequest toastWithMessage:message]];
+        [YFAlertPresenter presentToastFrom:self message:message duration:1.0];
         return;
     }
     switch (item.type) {
