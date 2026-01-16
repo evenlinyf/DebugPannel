@@ -67,12 +67,14 @@ static NSDictionary<NSString *, id> *saveComparisonValuesFromItems(NSDictionary<
     YFCellItem *saasItem = itemsById[YFEnvItemIdSaas];
     YFCellItem *isolationItem = itemsById[YFEnvItemIdIsolation];
     YFCellItem *versionItem = itemsById[YFEnvItemIdVersion];
+    YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
     return @{
         YFEnvItemIdEnvType : envItem.value ?: [NSNull null],
         YFEnvItemIdCluster : clusterItem.value ?: [NSNull null],
         YFEnvItemIdSaas : saasItem.value ?: [NSNull null],
         YFEnvItemIdIsolation : isolationItem.value ?: [NSNull null],
-        YFEnvItemIdVersion : versionItem.value ?: [NSNull null]
+        YFEnvItemIdVersion : versionItem.value ?: [NSNull null],
+        YFEnvItemIdResult : resultItem.value ?: [NSNull null]
     };
 }
 
@@ -396,7 +398,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
     YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];
     save.hidden = YES;
-    save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdSaas, YFEnvItemIdIsolation, YFEnvItemIdVersion];
+    save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdSaas, YFEnvItemIdIsolation, YFEnvItemIdVersion, YFEnvItemIdResult];
     save.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         NSDictionary<NSString *, id> *baseline = objc_getAssociatedObject(item, kYFEnvPanelSaveBaselineKey);
         if (!baseline) {
