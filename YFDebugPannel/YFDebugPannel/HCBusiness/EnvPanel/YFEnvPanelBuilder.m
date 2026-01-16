@@ -362,7 +362,9 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(cluster.value));
     displayCluster = MIN(kEnvClusterMax, displayCluster);
-    result.detail = envDisplayLabel(config.envType, displayCluster);
+    NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
+    result.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
+    result.detail = autoBaseURLForConfig(config);
     result.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdVersion, YFEnvItemIdIsolation];
     result.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
@@ -384,11 +386,12 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
             item.value = autoBaseURL;
         }
         item.autoValue = autoBaseURL;
-        item.title = @"环境";
-        item.hidden = isRelease;
         NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         displayCluster = MIN(kEnvClusterMax, displayCluster);
-        item.detail = envDisplayLabel(config.envType, displayCluster);
+        NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
+        item.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
+        item.hidden = isRelease;
+        item.detail = item.value.length > 0 ? item.value : autoBaseURL;
     };
 
     YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];

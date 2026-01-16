@@ -197,12 +197,16 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             if (!cell) {
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kYFEditableInfoCellId];
             }
-            UILabel *accessoryLabel = [[UILabel alloc] init];
-            accessoryLabel.text = @"编辑";
-            accessoryLabel.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
-            accessoryLabel.textColor = item.enabled ? self.view.tintColor : UIColor.secondaryLabelColor;
-            [accessoryLabel sizeToFit];
-            cell.accessoryView = accessoryLabel;
+            if (item.enabled) {
+                UILabel *accessoryLabel = [[UILabel alloc] init];
+                accessoryLabel.text = @"编辑";
+                accessoryLabel.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
+                accessoryLabel.textColor = self.view.tintColor;
+                [accessoryLabel sizeToFit];
+                cell.accessoryView = accessoryLabel;
+            } else {
+                cell.accessoryView = nil;
+            }
             cell.textLabel.text = item.title;
             cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
             cell.detailTextLabel.text = item.detail;
