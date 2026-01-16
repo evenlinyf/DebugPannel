@@ -29,91 +29,7 @@ static NSString *const kEnvItemStoreResult = @"HCEnvKit.result";
 static NSInteger const kEnvClusterMin = 1;
 static NSInteger const kEnvClusterMax = 20;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
-static const void *kYFEnvPanelExitObserverKey = &kYFEnvPanelExitObserverKey;
-static const void *kYFEnvPanelSnapshotKey = &kYFEnvPanelSnapshotKey;
-
-@interface YFEnvPanelChangeSnapshot ()
-@property (nonatomic, strong) HCEnvConfig *config;
-@property (nonatomic, copy) NSDictionary<NSString *, id> *storeValues;
-@end
-
-@implementation YFEnvPanelChangeSnapshot
-
-- (instancetype)initWithConfig:(HCEnvConfig *)config storeValues:(NSDictionary<NSString *, id> *)storeValues {
-    self = [super init];
-    if (self) {
-        _config = [config copy];
-        _storeValues = [storeValues copy];
-    }
-    return self;
-}
-
-@end
-
-static UIWindow *activeWindow(void) {
-    UIApplication *application = UIApplication.sharedApplication;
-    for (UIScene *scene in application.connectedScenes) {
-        if (![scene isKindOfClass:[UIWindowScene class]]) {
-            continue;
-        }
-        if (scene.activationState != UISceneActivationStateForegroundActive) {
-            continue;
-        }
-        UIWindowScene *windowScene = (UIWindowScene *)scene;
-        for (UIWindow *window in windowScene.windows) {
-            if (window.isKeyWindow) {
-                return window;
-            }
-        }
-    }
-    if (application.keyWindow) {
-        return application.keyWindow;
-    }
-    return application.windows.firstObject;
-}
-
-static UIViewController *topViewController(void) {
-    UIWindow *window = activeWindow();
-    UIViewController *top = window.rootViewController;
-    while (top.presentedViewController) {
-        top = top.presentedViewController;
-    }
-    return top;
-}
-
-@interface YFEnvPanelExitObserver : NSObject
-@property (nonatomic, strong) HCEnvConfig *initialConfig;
-@end
-
-@implementation YFEnvPanelExitObserver
-
-- (instancetype)initWithInitialConfig:(HCEnvConfig *)initialConfig {
-    self = [super init];
-    if (self) {
-        _initialConfig = [initialConfig copy];
-    }
-    return self;
-}
-
-- (void)dealloc {
-    HCEnvConfig *currentConfig = [HCEnvKit currentConfig];
-    if ([self.initialConfig isEqual:currentConfig]) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        UIViewController *presenter = topViewController();
-        if (!presenter) {
-            return;
-        }
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示"
-                                                                       message:@"环境已变更，重启 App 后生效"
-                                                                preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil]];
-        [presenter presentViewController:alert animated:YES completion:nil];
-    });
-}
-
-@end
+static const void *kYFEnvPanelSaveBaselineKey = &kYFEnvPanelSaveBaselineKey;
 
 // 环境配置需要按环境类型隔离持久化 key。
 static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
@@ -131,35 +47,38 @@ static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
     return build.baseURL ?: @"";
 }
 
-static BOOL isEnvConfigIdentifier(NSString *identifier) {
-    if (identifier.length == 0) {
-        return NO;
+static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
+    switch (envType) {
+        case HCEnvTypeRelease:
+            return @"线上环境";
+        case HCEnvTypeCustom:
+            return @"自定义";
+        case HCEnvTypeUat:
+            return [NSString stringWithFormat:@"uat-%ld", (long)clusterValue];
+        case HCEnvTypeDev:
+            return [NSString stringWithFormat:@"dev-%ld", (long)clusterValue];
     }
-    static NSSet<NSString *> *envConfigIdentifiers = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        envConfigIdentifiers = [NSSet setWithArray:@[
-            YFEnvItemIdEnvType,
-            YFEnvItemIdCluster,
-            YFEnvItemIdIsolation,
-            YFEnvItemIdVersion,
-            YFEnvItemIdResult
-        ]];
-    });
-    return [envConfigIdentifiers containsObject:identifier];
+    return @"";
+}
+
+static NSDictionary<NSString *, id> *saveComparisonValuesFromItems(NSDictionary<NSString *, YFCellItem *> *itemsById) {
+    YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+    YFCellItem *clusterItem = itemsById[YFEnvItemIdCluster];
+    YFCellItem *saasItem = itemsById[YFEnvItemIdSaas];
+    YFCellItem *isolationItem = itemsById[YFEnvItemIdIsolation];
+    YFCellItem *versionItem = itemsById[YFEnvItemIdVersion];
+    return @{
+        YFEnvItemIdEnvType : envItem.value ?: [NSNull null],
+        YFEnvItemIdCluster : clusterItem.value ?: [NSNull null],
+        YFEnvItemIdSaas : saasItem.value ?: [NSNull null],
+        YFEnvItemIdIsolation : isolationItem.value ?: [NSNull null],
+        YFEnvItemIdVersion : versionItem.value ?: [NSNull null]
+    };
 }
 
 static YFCellItem *saveItemFromSections(NSArray<YFEnvSection *> *sections) {
     NSDictionary<NSString *, YFCellItem *> *itemsById = [YFEnvPanelBuilder indexItemsByIdFromSections:sections];
     return itemsById[YFEnvItemIdSave];
-}
-
-static YFEnvPanelChangeSnapshot *snapshotForSections(NSArray<YFEnvSection *> *sections) {
-    return objc_getAssociatedObject(sections, kYFEnvPanelSnapshotKey);
-}
-
-static void setSnapshotForSections(NSArray<YFEnvSection *> *sections, YFEnvPanelChangeSnapshot *snapshot) {
-    objc_setAssociatedObject(sections, kYFEnvPanelSnapshotKey, snapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
@@ -218,8 +137,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
 + (UIViewController *)buildPanelViewController {
     YFEnvPanelViewController *controller = [[YFEnvPanelViewController alloc] initWithBuilder:[[YFEnvPanelBuilder alloc] init]];
-    YFEnvPanelExitObserver *observer = [[YFEnvPanelExitObserver alloc] initWithInitialConfig:[HCEnvKit currentConfig]];
-    objc_setAssociatedObject(controller, kYFEnvPanelExitObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return controller;
 }
 
@@ -251,45 +168,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     return [self configFromItems:itemsById];
 }
 
-+ (YFEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<YFEnvSection *> *)sections {
-    HCEnvConfig *config = [self configFromSections:sections];
-    NSMutableDictionary<NSString *, id> *values = [NSMutableDictionary dictionary];
-    for (YFEnvSection *section in sections) {
-        for (YFCellItem *item in section.items) {
-            if (item.storeKey.length == 0 || isEnvConfigIdentifier(item.identifier)) {
-                continue;
-            }
-            if (item.identifier.length == 0) {
-                continue;
-            }
-            values[item.identifier] = item.value ?: [NSNull null];
-        }
-    }
-    return [[YFEnvPanelChangeSnapshot alloc] initWithConfig:config storeValues:values];
-}
-
-+ (BOOL)sections:(NSArray<YFEnvSection *> *)sections differFromSnapshot:(YFEnvPanelChangeSnapshot *)snapshot {
-    if (!snapshot) {
-        return NO;
-    }
-    HCEnvConfig *currentConfig = [self configFromSections:sections];
-    if (![currentConfig isEqual:snapshot.config]) {
-        return YES;
-    }
-    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
-    for (NSString *identifier in snapshot.storeValues) {
-        YFCellItem *item = itemsById[identifier];
-        if (!item) {
-            continue;
-        }
-        id baseline = snapshot.storeValues[identifier] ?: [NSNull null];
-        id current = item.value ?: [NSNull null];
-        if (![baseline isEqual:current]) {
-            return YES;
-        }
-    }
-    return NO;
-}
 
 + (void)configureSaveActionForSections:(NSArray<YFEnvSection *> *)sections onSave:(dispatch_block_t)onSave {
     YFCellItem *saveItem = saveItemFromSections(sections);
@@ -319,14 +197,20 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     if (!saveItem) {
         return;
     }
-    BOOL pending = [self sections:sections differFromSnapshot:snapshotForSections(sections)];
-    saveItem.hidden = !pending;
-    saveItem.enabled = pending;
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    if (saveItem.recomputeBlock) {
+        saveItem.recomputeBlock(saveItem, itemsById);
+    }
 }
 
 + (void)captureBaselineForSections:(NSArray<YFEnvSection *> *)sections {
-    YFEnvPanelChangeSnapshot *snapshot = [self changeSnapshotFromSections:sections];
-    setSnapshotForSections(sections, snapshot);
+    YFCellItem *saveItem = saveItemFromSections(sections);
+    if (!saveItem) {
+        return;
+    }
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    NSDictionary<NSString *, id> *baseline = saveComparisonValuesFromItems(itemsById);
+    objc_setAssociatedObject(saveItem, kYFEnvPanelSaveBaselineKey, baseline, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 /// 如何新增配置项（重要）：
@@ -472,11 +356,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
     // Final URL：自定义环境可编辑，其余环境根据配置自动生成。
     YFCellItem *result = [YFCellItem editableInfoItemWithIdentifier:YFEnvItemIdResult
-                                                               title:@"Final URL"
+                                                               title:@"环境"
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
                                                         defaultValue:@""];
     result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
-    result.detail = [result.value isKindOfClass:[NSString class]] ? result.value : @"";
+    NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(cluster.value));
+    displayCluster = MIN(kEnvClusterMax, displayCluster);
+    result.detail = envDisplayLabel(config.envType, displayCluster);
     result.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdVersion, YFEnvItemIdIsolation];
     result.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
@@ -498,14 +384,28 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
             item.value = autoBaseURL;
         }
         item.autoValue = autoBaseURL;
-        item.title = @"Final URL";
+        item.title = @"环境";
         item.hidden = isRelease;
-        item.detail = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
+        NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
+        displayCluster = MIN(kEnvClusterMax, displayCluster);
+        item.detail = envDisplayLabel(config.envType, displayCluster);
     };
 
     YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];
     save.hidden = YES;
-    save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdIsolation, YFEnvItemIdVersion, YFEnvItemIdResult];
+    save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdSaas, YFEnvItemIdIsolation, YFEnvItemIdVersion];
+    save.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        NSDictionary<NSString *, id> *baseline = objc_getAssociatedObject(item, kYFEnvPanelSaveBaselineKey);
+        if (!baseline) {
+            item.hidden = YES;
+            item.enabled = NO;
+            return;
+        }
+        NSDictionary<NSString *, id> *current = saveComparisonValuesFromItems(itemsById);
+        BOOL pending = ![baseline isEqualToDictionary:current];
+        item.hidden = !pending;
+        item.enabled = pending;
+    };
 
     NSArray<YFCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
     YFEnvSection *section = [YFEnvSection sectionWithTitle:@"环境配置" items:items];
