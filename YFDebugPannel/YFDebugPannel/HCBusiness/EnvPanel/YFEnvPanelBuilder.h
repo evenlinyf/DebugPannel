@@ -9,7 +9,6 @@
 @class HCEnvConfig;
 @class YFEnvSection;
 @class UIViewController;
-@class YFEnvPanelChangeSnapshot;
 
 FOUNDATION_EXPORT NSString *const YFEnvItemIdSave;
 FOUNDATION_EXPORT NSNotificationName const YFEnvPanelDidSaveNotification;
@@ -28,23 +27,10 @@ FOUNDATION_EXPORT NSNotificationName const YFEnvPanelDidSaveNotification;
 + (void)refreshSections:(NSArray<YFEnvSection *> *)sections;
 /// 根据区块配置构建环境配置模型。
 + (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections;
-/// 生成当前区块快照，用于判断是否有待保存的变更。
-+ (YFEnvPanelChangeSnapshot *)changeSnapshotFromSections:(NSArray<YFEnvSection *> *)sections;
-/// 判断当前区块与快照是否存在差异。
-+ (BOOL)sections:(NSArray<YFEnvSection *> *)sections differFromSnapshot:(YFEnvPanelChangeSnapshot *)snapshot;
 /// 绑定保存按钮行为并在保存后触发回调。
 + (void)configureSaveActionForSections:(NSArray<YFEnvSection *> *)sections onSave:(dispatch_block_t)onSave;
 /// 更新保存按钮可见状态。
 + (void)updateSaveItemVisibilityInSections:(NSArray<YFEnvSection *> *)sections;
-/// 捕获当前快照用于后续对比。
+/// 捕获当前状态用于后续对比。
 + (void)captureBaselineForSections:(NSArray<YFEnvSection *> *)sections;
-@end
-
-/// 创建时间：2026/01/08
-/// 创建人：Codex
-/// 用途：记录面板配置的快照。
-@interface YFEnvPanelChangeSnapshot : NSObject
-@property (nonatomic, strong, readonly) HCEnvConfig *config;
-@property (nonatomic, copy, readonly) NSDictionary<NSString *, id> *storeValues;
-- (instancetype)initWithConfig:(HCEnvConfig *)config storeValues:(NSDictionary<NSString *, id> *)storeValues;
 @end
