@@ -78,6 +78,14 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     if (item.type == YFCellItemTypeEditableInfo) {
         item.detail = value ? [NSString stringWithFormat:@"%@", value] : nil;
     }
+    if (item.storeKey.length > 0) {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        if (item.value) {
+            [defaults setObject:item.value forKey:item.storeKey];
+        } else {
+            [defaults removeObjectForKey:item.storeKey];
+        }
+    }
     if (item.valueTransformer) {
         item.valueTransformer(item);
     }

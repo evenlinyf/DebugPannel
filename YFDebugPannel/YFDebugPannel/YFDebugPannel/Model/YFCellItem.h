@@ -40,6 +40,7 @@ typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 
 @property (nonatomic, copy) NSString *storeKey;
 @property (nonatomic, strong) id defaultValue;
+@property (nonatomic, assign) BOOL usesStoredValueOnLoad;
 
 @property (nonatomic, copy) NSArray<NSString *> *options;
 @property (nonatomic, copy) NSArray<NSString *> *dependsOn;

@@ -19,6 +19,7 @@
         _hidden = NO;
         _stepperMin = 0;
         _stepperMax = 100;
+        _usesStoredValueOnLoad = YES;
     }
     return self;
 }
