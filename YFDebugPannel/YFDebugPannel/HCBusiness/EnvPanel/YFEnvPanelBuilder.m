@@ -105,13 +105,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     NSArray<YFEnvSection *> *sections = [[self class] buildSections];
     for (YFEnvSection *section in sections) {
         for (YFCellItem *item in section.items) {
-            if (item.storeKey.length == 0) {
-                continue;
+            if (item.storeKey.length > 0 && item.usesStoredValueOnLoad) {
+                id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
+                if (stored) {
+                    item.defaultValue = stored;
+                }
             }
-            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
-            if (stored) {
-                item.value = stored;
-            } else if (item.defaultValue) {
+            if (!item.value && item.defaultValue) {
                 item.value = item.defaultValue;
             }
             if (item.type == YFCellItemTypeEditableInfo) {
@@ -232,9 +232,10 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     envType.value = @(config.envType);
 
     // 环境编号：需要根据 envType 切换持久化 key。
-    YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)kEnvClusterMin] minimum:1 maximum:20];
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
+    YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)initialCluster] minimum:1 maximum:20];
     cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
+    cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.dependsOn = @[YFEnvItemIdEnvType];
     cluster.validator = ^NSString *(NSString *input) {
@@ -274,8 +275,9 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     YFCellItem *saas = [YFCellItem stringItemWithIdentifier:YFEnvItemIdSaas
                                                       title:@"Saas 环境"
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
-                                               defaultValue:nil];
+                                               defaultValue:[NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster]];
     saas.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster];
+    saas.usesStoredValueOnLoad = NO;
     saas.disabledHint = @"仅 uat/dev 可用";
     saas.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster];
     saas.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
@@ -316,8 +318,9 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     YFCellItem *isolation = [YFCellItem stringItemWithIdentifier:YFEnvItemIdIsolation
                                                            title:@"隔离参数"
                                                         storeKey:storeKeyForEnvType(kEnvItemStoreIsolation, config.envType)
-                                                    defaultValue:@""];
+                                                    defaultValue:config.isolation];
     isolation.value = config.isolation;
+    isolation.usesStoredValueOnLoad = NO;
     isolation.disabledHint = @"仅 uat/dev 可用";
     isolation.dependsOn = @[YFEnvItemIdEnvType];
     isolation.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
@@ -338,8 +341,9 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     YFCellItem *version = [YFCellItem stringItemWithIdentifier:YFEnvItemIdVersion
                                                          title:@"版本号"
                                                       storeKey:storeKeyForEnvType(kEnvItemStoreVersion, config.envType)
-                                                  defaultValue:@"v1"];
+                                                  defaultValue:config.version];
     version.value = config.version;
+    version.usesStoredValueOnLoad = NO;
     version.disabledHint = @"仅 uat/dev 可用";
     version.dependsOn = @[YFEnvItemIdEnvType];
     version.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
@@ -357,11 +361,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     };
 
     // Final URL：自定义环境可编辑，其余环境根据配置自动生成。
+    NSString *resultValue = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
     YFCellItem *result = [YFCellItem editableInfoItemWithIdentifier:YFEnvItemIdResult
                                                                title:@"环境"
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
-                                                        defaultValue:@""];
-    result.value = config.customBaseURL.length > 0 ? config.customBaseURL : @"";
+                                                        defaultValue:resultValue];
+    result.value = resultValue;
+    result.usesStoredValueOnLoad = NO;
     NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(cluster.value));
     displayCluster = MIN(kEnvClusterMax, displayCluster);
     NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
