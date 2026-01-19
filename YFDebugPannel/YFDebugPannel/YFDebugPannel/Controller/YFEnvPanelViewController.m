@@ -265,8 +265,9 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     YFCellItem *item = [self itemAtIndexPath:indexPath];
     if (!item.enabled) {
-        NSString *message = item.disabledHint.length > 0 ? item.disabledHint : @"当前不可用";
-        [YFAlertPresenter presentToastFrom:self message:message duration:1.0];
+        if (item.disabledHint.length > 0) {
+            [YFAlertPresenter presentToastFrom:self message:item.disabledHint duration:1.0];
+        }
         return;
     }
     switch (item.type) {
