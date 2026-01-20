@@ -388,7 +388,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         item.storeKey = newStoreKey;
         if (storeKeyChanged) {
             id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
-            item.value = stored ?: item.defaultValue;
+            if (stored) {
+                item.value = stored;
+            } else if (isCustom) {
+                item.value = item.defaultValue;
+            } else {
+                item.value = autoBaseURL;
+            }
             current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         }
         item.enabled = isCustom;
