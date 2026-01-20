@@ -20,6 +20,14 @@
         _stepperMin = 0;
         _stepperMax = 100;
         _usesStoredValueOnLoad = YES;
+        _backgroundColor = UIColor.systemBackgroundColor;
+        _disabledBackgroundColor = UIColor.systemBackgroundColor;
+        _textColor = UIColor.labelColor;
+        _disabledTextColor = UIColor.secondaryLabelColor;
+        _detailTextColor = UIColor.secondaryLabelColor;
+        _disabledDetailTextColor = UIColor.secondaryLabelColor;
+        _accessoryTextColor = UIColor.systemBlueColor;
+        _disabledAccessoryTextColor = UIColor.secondaryLabelColor;
     }
     return self;
 }
@@ -68,6 +76,12 @@
 + (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(YFCellItemActionHandler)handler {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeAction];
     item.actionHandler = handler;
+    item.backgroundColor = UIColor.systemBlueColor;
+    item.disabledBackgroundColor = UIColor.systemGray3Color;
+    item.textColor = UIColor.whiteColor;
+    item.disabledTextColor = UIColor.whiteColor;
+    item.detailTextColor = UIColor.whiteColor;
+    item.disabledDetailTextColor = UIColor.whiteColor;
     return item;
 }
 

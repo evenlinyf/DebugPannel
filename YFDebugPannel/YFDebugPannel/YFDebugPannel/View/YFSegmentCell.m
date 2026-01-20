@@ -24,6 +24,8 @@
 
 - (void)configureWithItem:(YFCellItem *)item {
     self.textLabel.text = item.title;
+    self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+    self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     self.segmentedControl.enabled = item.enabled;
     [self.segmentedControl removeAllSegments];
     NSArray<NSString *> *options = item.options ?: @[];
