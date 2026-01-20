@@ -237,6 +237,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
     cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
+    cluster.detailTextColor = [UIColor redColor];
     cluster.dependsOn = @[YFEnvItemIdEnvType];
     cluster.validator = ^NSString *(NSString *input) {
         if (input.length == 0) {
@@ -279,6 +280,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     saas.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster];
     saas.usesStoredValueOnLoad = NO;
     saas.disabledHint = @"仅 uat/dev 可用";
+    saas.detail = @"随环境编号自动变化";
     saas.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster];
     saas.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
@@ -426,6 +428,12 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];
     save.hidden = YES;
     save.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster, YFEnvItemIdSaas, YFEnvItemIdIsolation, YFEnvItemIdVersion, YFEnvItemIdResult];
+    save.backgroundColor = UIColor.systemBlueColor;
+    save.disabledBackgroundColor = UIColor.systemGray3Color;
+    save.textColor = UIColor.whiteColor;
+    save.disabledTextColor = UIColor.whiteColor;
+    save.detailTextColor = UIColor.whiteColor;
+    save.disabledDetailTextColor = UIColor.whiteColor;
     save.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         NSDictionary<NSString *, id> *baseline = objc_getAssociatedObject(item, kYFEnvPanelSaveBaselineKey);
         if (!baseline) {
@@ -456,12 +464,24 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     // ELB 开关：常规布尔持久化配置项。
     BOOL curELB = [[NSUserDefaults standardUserDefaults] boolForKey: @"elbconfig"];
     YFCellItem *elb = [YFCellItem switchItemWithIdentifier:YFEnvItemIdElb
-                                                     title:@"ELB 开关"
+                                                     title:@"Switch: ELB 开关"
                                                   storeKey:@"elbconfig"
                                               defaultValue:@(curELB)];
-    elb.detail = @"如果不需要获取动态域名， 请关闭开关";
+    elb.detail = @"是否开启获取动态域名";
     
-    NSArray<YFCellItem *> *items = @[elb];
+    YFCellItem *action = [YFCellItem actionItemWithIdentifier:@"config.action" title:@"Action" handler:^(YFCellItem * _Nonnull item) {
+        NSLog(@"action handled");
+    }];
+    
+    YFCellItem *ppurl = [YFCellItem stringItemWithIdentifier:@"config.ppurl" title:@"String" storeKey:@"config.string" defaultValue:@""];
+    
+    YFCellItem *pickerUrl = [YFCellItem pickerItemWithIdentifier:@"config.pickershd" title:@"Picker" storeKey:@"config.picker" defaultValue:@"" options:@[
+        @"A", @"B", @"C"
+    ]];
+    
+    YFCellItem *infoIt = [YFCellItem infoItemWithIdentifier:@"config.info" title:@"Information" detail:@"Hello world!"];
+    
+    NSArray<YFCellItem *> *items = @[elb, action, ppurl, pickerUrl, infoIt];
     return [YFEnvSection sectionWithTitle:@"配置" items:items];
 }
 

@@ -27,6 +27,7 @@
     self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
     self.detailTextLabel.text = item.detail;
     self.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
+    self.detailTextLabel.numberOfLines = 0;
     self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     self.toggle.on = YFBoolValue(item.value);
     self.toggle.enabled = item.enabled;

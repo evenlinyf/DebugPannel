@@ -76,12 +76,6 @@
 + (instancetype)actionItemWithIdentifier:(NSString *)identifier title:(NSString *)title handler:(YFCellItemActionHandler)handler {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeAction];
     item.actionHandler = handler;
-    item.backgroundColor = UIColor.systemBlueColor;
-    item.disabledBackgroundColor = UIColor.systemGray3Color;
-    item.textColor = UIColor.whiteColor;
-    item.disabledTextColor = UIColor.whiteColor;
-    item.detailTextColor = UIColor.whiteColor;
-    item.disabledDetailTextColor = UIColor.whiteColor;
     return item;
 }
 
