@@ -29,6 +29,8 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 @property (nonatomic, assign) NSInteger clusterIndex;
 /// 隔离参数，用于灰度或隔离请求。
 @property (nonatomic, copy) NSString *isolation;
+/// Saas 环境标识，用于外部切换 Saas 相关配置。
+@property (nonatomic, copy) NSString *saas;
 /// 版本号，可为空；为空时域名不拼接版本号。
 @property (nonatomic, copy) NSString *version;
 /// 自定义生效域名，设置后覆盖自动拼接的结果。
@@ -45,6 +47,8 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 @property (nonatomic, copy) NSString *displayName;
 /// 隔离参数回显。
 @property (nonatomic, copy) NSString *isolation;
+/// Saas 环境回显。
+@property (nonatomic, copy) NSString *saas;
 @end
 
 /// 创建时间：2026/01/08
