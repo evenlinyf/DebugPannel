@@ -12,7 +12,7 @@
 @implementation YFSwitchCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+    self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
     if (self) {
         _toggle = [[UISwitch alloc] init];
         [_toggle addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -25,6 +25,8 @@
 - (void)configureWithItem:(YFCellItem *)item {
     self.textLabel.text = item.title;
     self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+    self.detailTextLabel.text = item.detail;
+    self.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
     self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     self.toggle.on = YFBoolValue(item.value);
     self.toggle.enabled = item.enabled;

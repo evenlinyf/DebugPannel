@@ -22,6 +22,7 @@ static NSString *const kYFSegmentCellId = @"YFSegmentCell";
 static NSString *const kYFSwitchCellId = @"YFSwitchCell";
 static NSString *const kYFStepperCellId = @"YFStepperCell";
 static NSString *const kYFValueCellId = @"YFValueCell";
+static NSString *const kYFActionCellId = @"YFActionCell";
 static NSString *const kYFInfoCellId = @"YFInfoCell";
 static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
 
@@ -228,61 +229,38 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             return cell;
         }
         case YFCellItemTypeString:
-        case YFCellItemTypePicker:
-        case YFCellItemTypeAction: {
+        case YFCellItemTypePicker: {
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFValueCellId];
             if (!cell) {
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:kYFValueCellId];
             }
             cell.textLabel.text = item.title;
-            if (item.type == YFCellItemTypeAction) {
-                cell.detailTextLabel.text = nil;
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                cell.textLabel.textAlignment = NSTextAlignmentCenter;
-                cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
-                cell.textLabel.attributedText = nil;
-                cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
-                cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
-                cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
-                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-            } else {
-                cell.detailTextLabel.text = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                cell.textLabel.textAlignment = NSTextAlignmentNatural;
-                cell.textLabel.font = [UIFont systemFontOfSize:17.0];
-                cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
-                cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
-                cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
-                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                if (item.detail.length > 0) {
-                    UIColor *titleColor = item.enabled ? item.textColor : item.disabledTextColor;
-                    UIFont *titleFont = [UIFont systemFontOfSize:17.0];
-                    UIFont *detailFont = [UIFont systemFontOfSize:12.0];
-                    NSDictionary<NSAttributedStringKey, id> *titleAttributes = @{
-                        NSForegroundColorAttributeName: titleColor,
-                        NSFontAttributeName: titleFont
-                    };
-                    NSDictionary<NSAttributedStringKey, id> *detailAttributes = @{
-                        NSForegroundColorAttributeName: item.enabled ? item.detailTextColor : item.disabledDetailTextColor,
-                        NSFontAttributeName: detailFont
-                    };
-                    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:item.title
-                                                                                            attributes:titleAttributes];
-                    [text appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
-                    [text appendAttributedString:[[NSAttributedString alloc] initWithString:item.detail
-                                                                                 attributes:detailAttributes]];
-                    cell.textLabel.attributedText = text;
-                    cell.textLabel.numberOfLines = 2;
-                    cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-                    [cell.textLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                                                    forAxis:UILayoutConstraintAxisHorizontal];
-                    [cell.detailTextLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                                      forAxis:UILayoutConstraintAxisHorizontal];
-                } else {
-                    cell.textLabel.attributedText = nil;
-                    cell.textLabel.numberOfLines = 1;
-                }
+            cell.detailTextLabel.text = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.textLabel.textAlignment = NSTextAlignmentNatural;
+            cell.textLabel.font = [UIFont systemFontOfSize:17.0];
+            cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+            cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+            cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            cell.textLabel.numberOfLines = 1;
+            cell.userInteractionEnabled = YES;
+            return cell;
+        }
+        case YFCellItemTypeAction: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kYFActionCellId];
+            if (!cell) {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:kYFActionCellId];
             }
+            cell.textLabel.text = item.title;
+            cell.textLabel.textAlignment = NSTextAlignmentNatural;
+            cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
+            cell.detailTextLabel.text = item.detail;
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+            cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+            cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             cell.userInteractionEnabled = YES;
             return cell;
         }
