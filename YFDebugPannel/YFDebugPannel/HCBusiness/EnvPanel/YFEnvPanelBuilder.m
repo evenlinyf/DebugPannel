@@ -314,10 +314,10 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         }
     };
 
-    // 隔离参数：不同环境类型各自持久化。
+    // 隔离参数：全局持久化，切到线上并保存时清空。
     YFCellItem *isolation = [YFCellItem stringItemWithIdentifier:YFEnvItemIdIsolation
                                                            title:@"隔离参数"
-                                                        storeKey:storeKeyForEnvType(kEnvItemStoreIsolation, config.envType)
+                                                        storeKey:kEnvItemStoreIsolation
                                                     defaultValue:config.isolation];
     isolation.value = config.isolation;
     isolation.usesStoredValueOnLoad = NO;
@@ -326,11 +326,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     isolation.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
         HCEnvType envTypeValue = YFIntValue(envItem.value);
-        NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreIsolation, envTypeValue);
-        BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
-        item.storeKey = newStoreKey;
-        if (storeKeyChanged) {
-            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
+        if (item.storeKey.length == 0) {
+            item.storeKey = kEnvItemStoreIsolation;
+        }
+        if (envTypeValue == HCEnvTypeRelease) {
+            item.value = nil;
+        } else if (![item.value isKindOfClass:[NSString class]] || [(NSString *)item.value length] == 0) {
+            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
             item.value = stored ?: item.defaultValue;
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
