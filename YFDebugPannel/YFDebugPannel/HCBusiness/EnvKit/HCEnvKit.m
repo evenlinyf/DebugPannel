@@ -14,6 +14,19 @@ static NSString *HCNormalizedString(NSString *value) {
     return value ?: @"";
 }
 
+static NSString *HCEnvTypeDescription(HCEnvType envType) {
+    switch (envType) {
+        case HCEnvTypeRelease:
+            return @"release";
+        case HCEnvTypeUat:
+            return @"uat";
+        case HCEnvTypeDev:
+            return @"dev";
+        case HCEnvTypeCustom:
+            return @"custom";
+    }
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -66,9 +79,32 @@ static NSString *HCNormalizedString(NSString *value) {
     return hashValue;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@: %p; envType=%@; clusterIndex=%ld; isolation=%@; saas=%@; version=%@; customBaseURL=%@>",
+            NSStringFromClass([self class]),
+            self,
+            HCEnvTypeDescription(self.envType),
+            (long)self.clusterIndex,
+            HCNormalizedString(self.isolation),
+            HCNormalizedString(self.saas),
+            HCNormalizedString(self.version),
+            HCNormalizedString(self.customBaseURL)];
+}
+
 @end
 
 @implementation HCEnvBuildResult
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@: %p; baseURL=%@; displayName=%@; isolation=%@; saas=%@>",
+            NSStringFromClass([self class]),
+            self,
+            HCNormalizedString(self.baseURL),
+            HCNormalizedString(self.displayName),
+            HCNormalizedString(self.isolation),
+            HCNormalizedString(self.saas)];
+}
+
 @end
 
 @implementation HCEnvKit
