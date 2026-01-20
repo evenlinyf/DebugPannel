@@ -301,19 +301,16 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         item.hidden = (envTypeValue == HCEnvTypeRelease);
         NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
-        if ([item.value isKindOfClass:[NSString class]]) {
+        if (![item.value isKindOfClass:[NSString class]]) {
+            item.value = autoValue;
+        } else {
             NSString *current = item.value;
-            BOOL matchesAuto = [current hasPrefix:kEnvSaasPrefix];
-            NSString *suffix = [current stringByReplacingOccurrencesOfString:kEnvSaasPrefix withString:@""];
-            NSScanner *scanner = [NSScanner scannerWithString:suffix];
-            NSInteger number = 0;
-            BOOL isNumber = [scanner scanInteger:&number] && scanner.isAtEnd;
-            if (matchesAuto && isNumber) {
+            NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
+            if (current.length == 0 || [current isEqualToString:previousAuto]) {
                 item.value = autoValue;
             }
-        } else {
-            item.value = autoValue;
         }
+        item.autoValue = autoValue;
     };
 
     // 隔离参数：全局持久化，切到线上并保存时清空。
