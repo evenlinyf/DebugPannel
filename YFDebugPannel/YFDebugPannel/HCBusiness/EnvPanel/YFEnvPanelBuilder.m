@@ -345,6 +345,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                       storeKey:storeKeyForEnvType(kEnvItemStoreVersion, config.envType)
                                                   defaultValue:config.version];
     version.value = config.version;
+    version.detail = @"版本号会赋值到 uat-* 后面， 比如 uat 3, 版本号设置 v3, url 就会变成 uat3-v3";
     version.usesStoredValueOnLoad = NO;
     version.disabledHint = @"仅 uat/dev 可用";
     version.dependsOn = @[YFEnvItemIdEnvType];
@@ -407,7 +408,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
         item.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
         item.hidden = isRelease;
-        item.detail = item.value.length > 0 ? item.value : autoBaseURL;
+        item.detail = ((NSString *)item.value).length > 0 ? item.value : autoBaseURL;
     };
 
     YFCellItem *save = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSave title:@"保存" handler:nil];
@@ -426,7 +427,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         item.enabled = pending;
     };
 
-    NSArray<YFCellItem *> *items = @[envType, cluster, saas, isolation, version, result, save];
+    NSArray<YFCellItem *> *items = @[envType, cluster, version, saas, isolation, result, save];
     YFEnvSection *section = [YFEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
@@ -441,12 +442,13 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
 + (YFEnvSection *)buildConfigSection {
     // ELB 开关：常规布尔持久化配置项。
+    BOOL curELB = [[NSUserDefaults standardUserDefaults] boolForKey: @"elbconfig"];
     YFCellItem *elb = [YFCellItem switchItemWithIdentifier:YFEnvItemIdElb
                                                      title:@"ELB 开关"
                                                   storeKey:@"elbconfig"
-                                              defaultValue:@(YES)];
+                                              defaultValue:@(curELB)];
     elb.detail = @"如果不需要获取动态域名， 请关闭开关";
-
+    
     NSArray<YFCellItem *> *items = @[elb];
     return [YFEnvSection sectionWithTitle:@"配置" items:items];
 }
@@ -458,6 +460,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     YFCellItem *isolationItem = itemsById[YFEnvItemIdIsolation];
     YFCellItem *versionItem = itemsById[YFEnvItemIdVersion];
     YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
+    
     config.envType = YFIntValue(envItem.value);
     NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(clusterItem.value));
     clusterValue = MIN(kEnvClusterMax, clusterValue);
