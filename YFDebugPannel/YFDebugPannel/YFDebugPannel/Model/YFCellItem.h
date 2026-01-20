@@ -24,30 +24,50 @@ typedef void (^YFCellItemValueTransformer)(YFCellItem *item);
 typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 
 @interface YFCellItem : NSObject
+/// 唯一标识符，用于索引与持久化。
 @property (nonatomic, copy, readonly) NSString *identifier;
+/// 左侧主标题文案。
 @property (nonatomic, copy) NSString *title;
+/// 右侧详情文案（可选）。
 @property (nonatomic, copy) NSString *detail;
+/// 自动生成/展示的值字符串。
 @property (nonatomic, copy) NSString *autoValue;
+/// 是否可交互/可用。
 @property (nonatomic, assign) BOOL enabled;
+/// 是否隐藏该项。
 @property (nonatomic, assign) BOOL hidden;
+/// 不可用时的提示文案。
 @property (nonatomic, copy) NSString *disabledHint;
 
+/// Cell 的展示类型。
 @property (nonatomic, assign) YFCellItemType type;
+/// 当前值（类型随 cell 类型变化）。
 @property (nonatomic, strong) id value;
 
+/// Stepper 最小值。
 @property (nonatomic, assign) NSInteger stepperMin;
+/// Stepper 最大值。
 @property (nonatomic, assign) NSInteger stepperMax;
 
+/// 本地持久化存储 key。
 @property (nonatomic, copy) NSString *storeKey;
+/// 默认值（未持久化时使用）。
 @property (nonatomic, strong) id defaultValue;
+/// 是否在加载时优先使用持久化值。
 @property (nonatomic, assign) BOOL usesStoredValueOnLoad;
 
+/// Segment/Picker 等可选项列表。
 @property (nonatomic, copy) NSArray<NSString *> *options;
+/// 依赖的其他 item 标识符列表。
 @property (nonatomic, copy) NSArray<NSString *> *dependsOn;
+/// 依赖变更时触发的重新计算回调。
 @property (nonatomic, copy) YFCellItemRecomputeBlock recomputeBlock;
 
+/// 输入校验器（返回错误信息或 nil）。
 @property (nonatomic, copy) YFCellItemValidator validator;
+/// 值转换器（用于展示/持久化前处理）。
 @property (nonatomic, copy) YFCellItemValueTransformer valueTransformer;
+/// 点击/操作触发的回调。
 @property (nonatomic, copy) YFCellItemActionHandler actionHandler;
 
 - (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type;
