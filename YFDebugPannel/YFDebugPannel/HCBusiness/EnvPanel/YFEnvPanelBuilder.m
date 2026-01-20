@@ -485,6 +485,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
     YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
     YFCellItem *clusterItem = itemsById[YFEnvItemIdCluster];
+    YFCellItem *saasItem = itemsById[YFEnvItemIdSaas];
     YFCellItem *isolationItem = itemsById[YFEnvItemIdIsolation];
     YFCellItem *versionItem = itemsById[YFEnvItemIdVersion];
     YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
@@ -494,6 +495,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     clusterValue = MIN(kEnvClusterMax, clusterValue);
     config.clusterIndex = clusterValue;
     config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
+    config.saas = [saasItem.value isKindOfClass:[NSString class]] ? saasItem.value : @"";
     config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
     NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
     NSString *autoBaseURL = autoBaseURLForConfig(config);

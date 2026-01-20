@@ -20,6 +20,7 @@ static NSString *HCNormalizedString(NSString *value) {
         _envType = HCEnvTypeRelease;
         _clusterIndex = 1;
         _isolation = @"";
+        _saas = @"";
         _version = @"v1";
         _customBaseURL = @"";
     }
@@ -31,6 +32,7 @@ static NSString *HCNormalizedString(NSString *value) {
     copy.envType = self.envType;
     copy.clusterIndex = self.clusterIndex;
     copy.isolation = HCNormalizedString(self.isolation);
+    copy.saas = HCNormalizedString(self.saas);
     copy.version = HCNormalizedString(self.version);
     copy.customBaseURL = HCNormalizedString(self.customBaseURL);
     return copy;
@@ -47,9 +49,10 @@ static NSString *HCNormalizedString(NSString *value) {
     BOOL envTypeEqual = (self.envType == other.envType);
     BOOL clusterEqual = (self.clusterIndex == other.clusterIndex);
     BOOL isolationEqual = [HCNormalizedString(self.isolation) isEqualToString:HCNormalizedString(other.isolation)];
+    BOOL saasEqual = [HCNormalizedString(self.saas) isEqualToString:HCNormalizedString(other.saas)];
     BOOL versionEqual = [HCNormalizedString(self.version) isEqualToString:HCNormalizedString(other.version)];
     BOOL baseURLEqual = [HCNormalizedString(self.customBaseURL) isEqualToString:HCNormalizedString(other.customBaseURL)];
-    return envTypeEqual && clusterEqual && isolationEqual && versionEqual && baseURLEqual;
+    return envTypeEqual && clusterEqual && isolationEqual && saasEqual && versionEqual && baseURLEqual;
 }
 
 - (NSUInteger)hash {
@@ -57,6 +60,7 @@ static NSString *HCNormalizedString(NSString *value) {
     hashValue ^= (NSUInteger)self.envType;
     hashValue ^= (NSUInteger)self.clusterIndex;
     hashValue ^= HCNormalizedString(self.isolation).hash;
+    hashValue ^= HCNormalizedString(self.saas).hash;
     hashValue ^= HCNormalizedString(self.version).hash;
     hashValue ^= HCNormalizedString(self.customBaseURL).hash;
     return hashValue;
@@ -89,6 +93,7 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
             config.clusterIndex = clusterIndex.integerValue;
         }
         config.isolation = stored[@"isolation"] ?: @"";
+        config.saas = stored[@"saas"] ?: @"";
         config.version = stored[@"version"] ?: @"v1";
         config.customBaseURL = stored[@"customBaseURL"] ?: @"";
     }
@@ -100,6 +105,7 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
         @"envType": @(config.envType),
         @"clusterIndex": @(config.clusterIndex),
         @"isolation": config.isolation ?: @"",
+        @"saas": config.saas ?: @"",
         @"version": config.version ?: @"v1",
         @"customBaseURL": config.customBaseURL ?: @""
     };
@@ -111,6 +117,7 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
 + (HCEnvBuildResult *)buildResult:(HCEnvConfig *)config {
     HCEnvBuildResult *result = [[HCEnvBuildResult alloc] init];
     result.isolation = config.isolation ?: @"";
+    result.saas = config.saas ?: @"";
     if (config.customBaseURL.length > 0) {
         result.displayName = @"自定义";
         result.baseURL = config.customBaseURL;
