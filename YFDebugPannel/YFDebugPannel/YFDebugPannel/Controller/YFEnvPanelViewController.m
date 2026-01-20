@@ -237,7 +237,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.textLabel.text = item.title;
             if (item.type == YFCellItemTypeAction) {
                 cell.detailTextLabel.text = nil;
-                cell.accessoryType = UITableViewCellAccessoryNone;
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;
                 cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
                 cell.textLabel.attributedText = nil;
@@ -272,7 +272,12 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                     [text appendAttributedString:[[NSAttributedString alloc] initWithString:item.detail
                                                                                  attributes:detailAttributes]];
                     cell.textLabel.attributedText = text;
-                    cell.textLabel.numberOfLines = 0;
+                    cell.textLabel.numberOfLines = 2;
+                    cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+                    [cell.textLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                                                    forAxis:UILayoutConstraintAxisHorizontal];
+                    [cell.detailTextLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                                                      forAxis:UILayoutConstraintAxisHorizontal];
                 } else {
                     cell.textLabel.attributedText = nil;
                     cell.textLabel.numberOfLines = 1;

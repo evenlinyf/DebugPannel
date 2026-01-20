@@ -27,6 +27,12 @@
     self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
     self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     self.segmentedControl.enabled = item.enabled;
+    self.segmentedControl.selectedSegmentTintColor = item.enabled ? item.accessoryTextColor : item.disabledAccessoryTextColor;
+    UIColor *normalTitleColor = item.enabled ? item.textColor : item.disabledTextColor;
+    [self.segmentedControl setTitleTextAttributes:@{NSForegroundColorAttributeName: normalTitleColor}
+                                         forState:UIControlStateNormal];
+    [self.segmentedControl setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.whiteColor}
+                                         forState:UIControlStateSelected];
     [self.segmentedControl removeAllSegments];
     NSArray<NSString *> *options = item.options ?: @[];
     [options enumerateObjectsUsingBlock:^(NSString *title, NSUInteger idx, BOOL *stop) {
