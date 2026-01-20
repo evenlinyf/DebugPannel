@@ -9,6 +9,19 @@
 
 @implementation YFCellItem
 
+static void YFApplyStoredDefaultValue(YFCellItem *item, NSString *storeKey, id defaultValue) {
+    item.storeKey = storeKey ?: @"";
+    id storedValue = nil;
+    if (item.storeKey.length > 0) {
+        storedValue = [[NSUserDefaults standardUserDefaults] objectForKey:item.storeKey];
+    }
+    id resolvedDefaultValue = storedValue ?: defaultValue;
+    item.defaultValue = resolvedDefaultValue;
+    if (!item.value && resolvedDefaultValue) {
+        item.value = resolvedDefaultValue;
+    }
+}
+
 - (instancetype)initWithIdentifier:(NSString *)identifier title:(NSString *)title type:(YFCellItemType)type {
     self = [super init];
     if (self) {
@@ -42,8 +55,7 @@
                                 storeKey:(NSString *)storeKey
                             defaultValue:(id)defaultValue {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeSwitch];
-    item.storeKey = storeKey ?: @"";
-    item.defaultValue = defaultValue;
+    YFApplyStoredDefaultValue(item, storeKey, defaultValue);
     return item;
 }
 
@@ -53,8 +65,7 @@
                                 storeKey:(NSString *)storeKey
                             defaultValue:(id)defaultValue {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeString];
-    item.storeKey = storeKey ?: @"";
-    item.defaultValue = defaultValue;
+    YFApplyStoredDefaultValue(item, storeKey, defaultValue);
     return item;
 }
 
@@ -66,8 +77,7 @@
                                   minimum:(NSInteger)minimum
                                   maximum:(NSInteger)maximum {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeStepper];
-    item.storeKey = storeKey ?: @"";
-    item.defaultValue = defaultValue;
+    YFApplyStoredDefaultValue(item, storeKey, defaultValue);
     item.stepperMin = minimum;
     item.stepperMax = maximum;
     return item;
@@ -100,8 +110,7 @@
                             defaultValue:(id)defaultValue
                                  options:(NSArray<NSString *> *)options {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypePicker];
-    item.storeKey = storeKey ?: @"";
-    item.defaultValue = defaultValue;
+    YFApplyStoredDefaultValue(item, storeKey, defaultValue);
     item.options = options;
     return item;
 }
@@ -120,8 +129,7 @@
                                       storeKey:(NSString *)storeKey
                                   defaultValue:(id)defaultValue {
     YFCellItem *item = [self itemWithIdentifier:identifier title:title type:YFCellItemTypeEditableInfo];
-    item.storeKey = storeKey ?: @"";
-    item.defaultValue = defaultValue;
+    YFApplyStoredDefaultValue(item, storeKey, defaultValue);
     return item;
 }
 
