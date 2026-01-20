@@ -462,11 +462,10 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
 + (YFEnvSection *)buildConfigSection {
     // ELB 开关：常规布尔持久化配置项。
-    BOOL curELB = [[NSUserDefaults standardUserDefaults] boolForKey: @"elbconfig"];
     YFCellItem *elb = [YFCellItem switchItemWithIdentifier:YFEnvItemIdElb
                                                      title:@"Switch: ELB 开关"
                                                   storeKey:@"elbconfig"
-                                              defaultValue:@(curELB)];
+                                              defaultValue:@(YES)];
     elb.detail = @"是否开启获取动态域名";
     
     YFCellItem *action = [YFCellItem actionItemWithIdentifier:@"config.action" title:@"Action" handler:^(YFCellItem * _Nonnull item) {
