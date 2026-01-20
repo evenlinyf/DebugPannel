@@ -380,10 +380,7 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     result.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         HCEnvConfig *config = [self configFromItems:itemsById];
         NSString *autoBaseURL = autoBaseURLForConfig(config);
-        NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
-        NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
         BOOL isCustom = (config.envType == HCEnvTypeCustom);
-        BOOL isRelease = config.envType == HCEnvTypeRelease;
         NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreResult, config.envType);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
@@ -396,18 +393,33 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
             } else {
                 item.value = autoBaseURL;
             }
-            current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         }
+        NSString *current = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
         item.enabled = isCustom;
-        if (isRelease || current.length == 0 || [current isEqualToString:previousAuto]) {
-            item.value = autoBaseURL;
+        switch (config.envType) {
+            case HCEnvTypeRelease:
+            case HCEnvTypeUat:
+            case HCEnvTypeDev:
+                item.value = autoBaseURL;
+                break;
+            case HCEnvTypeCustom:
+            {
+                NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
+                if (current.length == 0 || [current isEqualToString:previousAuto]) {
+                    item.value = autoBaseURL;
+                }
+                break;
+            }
+            default:
+                item.value = autoBaseURL;
+                break;
         }
         item.autoValue = autoBaseURL;
         NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         displayCluster = MIN(kEnvClusterMax, displayCluster);
         NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
         item.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
-        item.hidden = isRelease;
+        item.hidden = (config.envType == HCEnvTypeRelease);
         item.detail = ((NSString *)item.value).length > 0 ? item.value : autoBaseURL;
     };
 
