@@ -31,9 +31,9 @@
     self.stepper.minimumValue = minimum;
     self.stepper.maximumValue = maximum;
     self.stepper.enabled = item.enabled;
-    UIColor *labelColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
-    self.textLabel.textColor = labelColor;
-    self.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+    self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+    self.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
+    self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     NSInteger value = YFIntValue(item.value);
     self.stepper.value = value;
     self.stepper.enabled = item.enabled;

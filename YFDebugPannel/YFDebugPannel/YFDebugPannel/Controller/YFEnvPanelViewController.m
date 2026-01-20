@@ -192,12 +192,13 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             }
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             cell.textLabel.text = item.title;
-            cell.textLabel.textColor = UIColor.labelColor;
-            cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+            cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+            cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
             cell.userInteractionEnabled = NO;
             cell.accessoryType = UITableViewCellAccessoryNone;
             cell.detailTextLabel.text = item.detail;
             cell.detailTextLabel.numberOfLines = 1;
+            cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
             return cell;
         }
         case YFCellItemTypeEditableInfo: {
@@ -209,20 +210,21 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 UILabel *accessoryLabel = [[UILabel alloc] init];
                 accessoryLabel.text = @"编辑";
                 accessoryLabel.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
-                accessoryLabel.textColor = self.view.tintColor;
+                accessoryLabel.textColor = item.accessoryTextColor;
                 [accessoryLabel sizeToFit];
                 cell.accessoryView = accessoryLabel;
             } else {
                 cell.accessoryView = nil;
             }
             cell.textLabel.text = item.title;
-            cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+            cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
             cell.detailTextLabel.text = item.detail;
-            cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+            cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
             cell.detailTextLabel.numberOfLines = 0;
             cell.detailTextLabel.lineBreakMode = NSLineBreakByCharWrapping;
             cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             cell.userInteractionEnabled = YES;
+            cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
             return cell;
         }
         case YFCellItemTypeString:
@@ -239,22 +241,21 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;
                 cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
                 cell.textLabel.attributedText = nil;
-                UIColor *backgroundColor = item.enabled ? self.view.tintColor : UIColor.systemGray3Color;
-                cell.backgroundColor = backgroundColor;
-                cell.textLabel.textColor = UIColor.whiteColor;
-                cell.detailTextLabel.textColor = UIColor.whiteColor;
+                cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+                cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+                cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             } else {
                 cell.detailTextLabel.text = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
                 cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 cell.textLabel.textAlignment = NSTextAlignmentNatural;
                 cell.textLabel.font = [UIFont systemFontOfSize:17.0];
-                cell.backgroundColor = UIColor.systemBackgroundColor;
-                cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
-                cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
+                cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+                cell.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+                cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 if (item.detail.length > 0) {
-                    UIColor *titleColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+                    UIColor *titleColor = item.enabled ? item.textColor : item.disabledTextColor;
                     UIFont *titleFont = [UIFont systemFontOfSize:17.0];
                     UIFont *detailFont = [UIFont systemFontOfSize:12.0];
                     NSDictionary<NSAttributedStringKey, id> *titleAttributes = @{
@@ -262,7 +263,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                         NSFontAttributeName: titleFont
                     };
                     NSDictionary<NSAttributedStringKey, id> *detailAttributes = @{
-                        NSForegroundColorAttributeName: UIColor.secondaryLabelColor,
+                        NSForegroundColorAttributeName: item.enabled ? item.detailTextColor : item.disabledDetailTextColor,
                         NSFontAttributeName: detailFont
                     };
                     NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:item.title

@@ -2,6 +2,7 @@
 /// 创建人：Codex
 /// 用途：调试面板通用 cell 数据模型定义。
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +39,22 @@ typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 @property (nonatomic, assign) BOOL hidden;
 /// 不可用时的提示文案。
 @property (nonatomic, copy) NSString *disabledHint;
+/// 背景色。
+@property (nonatomic, strong) UIColor *backgroundColor;
+/// 不可用时背景色。
+@property (nonatomic, strong) UIColor *disabledBackgroundColor;
+/// 主文案颜色。
+@property (nonatomic, strong) UIColor *textColor;
+/// 不可用时主文案颜色。
+@property (nonatomic, strong) UIColor *disabledTextColor;
+/// 详情文案颜色。
+@property (nonatomic, strong) UIColor *detailTextColor;
+/// 不可用时详情文案颜色。
+@property (nonatomic, strong) UIColor *disabledDetailTextColor;
+/// 辅助视图文案颜色（如右侧“编辑”）。
+@property (nonatomic, strong) UIColor *accessoryTextColor;
+/// 不可用时辅助视图文案颜色。
+@property (nonatomic, strong) UIColor *disabledAccessoryTextColor;
 
 /// Cell 的展示类型。
 @property (nonatomic, assign) YFCellItemType type;
