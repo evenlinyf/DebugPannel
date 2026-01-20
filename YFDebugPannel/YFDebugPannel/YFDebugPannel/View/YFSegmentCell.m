@@ -12,7 +12,7 @@
 @implementation YFSegmentCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+    self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
     if (self) {
         _segmentedControl = [[UISegmentedControl alloc] initWithItems:@[]];
         [_segmentedControl addTarget:self action:@selector(segmentChanged:) forControlEvents:UIControlEventValueChanged];
@@ -25,6 +25,8 @@
 - (void)configureWithItem:(YFCellItem *)item {
     self.textLabel.text = item.title;
     self.textLabel.textColor = item.enabled ? item.textColor : item.disabledTextColor;
+    self.detailTextLabel.text = item.detail;
+    self.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
     self.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
     self.segmentedControl.enabled = item.enabled;
     self.segmentedControl.selectedSegmentTintColor = item.enabled ? item.accessoryTextColor : item.disabledAccessoryTextColor;
