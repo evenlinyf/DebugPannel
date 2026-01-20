@@ -238,6 +238,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 cell.accessoryType = UITableViewCellAccessoryNone;
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;
                 cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
+                cell.textLabel.attributedText = nil;
                 UIColor *backgroundColor = item.enabled ? self.view.tintColor : UIColor.systemGray3Color;
                 cell.backgroundColor = backgroundColor;
                 cell.textLabel.textColor = UIColor.whiteColor;
@@ -252,6 +253,29 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 cell.textLabel.textColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
                 cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                if (item.detail.length > 0) {
+                    UIColor *titleColor = item.enabled ? UIColor.labelColor : UIColor.secondaryLabelColor;
+                    UIFont *titleFont = [UIFont systemFontOfSize:17.0];
+                    UIFont *detailFont = [UIFont systemFontOfSize:12.0];
+                    NSDictionary<NSAttributedStringKey, id> *titleAttributes = @{
+                        NSForegroundColorAttributeName: titleColor,
+                        NSFontAttributeName: titleFont
+                    };
+                    NSDictionary<NSAttributedStringKey, id> *detailAttributes = @{
+                        NSForegroundColorAttributeName: UIColor.secondaryLabelColor,
+                        NSFontAttributeName: detailFont
+                    };
+                    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:item.title
+                                                                                            attributes:titleAttributes];
+                    [text appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+                    [text appendAttributedString:[[NSAttributedString alloc] initWithString:item.detail
+                                                                                 attributes:detailAttributes]];
+                    cell.textLabel.attributedText = text;
+                    cell.textLabel.numberOfLines = 0;
+                } else {
+                    cell.textLabel.attributedText = nil;
+                    cell.textLabel.numberOfLines = 1;
+                }
             }
             cell.userInteractionEnabled = YES;
             return cell;
