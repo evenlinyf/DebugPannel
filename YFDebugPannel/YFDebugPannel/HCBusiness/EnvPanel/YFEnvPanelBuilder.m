@@ -301,12 +301,16 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         item.hidden = (envTypeValue == HCEnvTypeRelease);
         NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
+        NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
+        BOOL autoValueChanged = ![previousAuto isEqualToString:autoValue];
         if (![item.value isKindOfClass:[NSString class]]) {
             item.value = autoValue;
         } else {
             NSString *current = item.value;
-            NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
-            if (current.length == 0 || [current isEqualToString:previousAuto]) {
+            BOOL shouldResetToAuto = (current.length == 0 || [current isEqualToString:previousAuto]);
+            if ((envTypeValue == HCEnvTypeUat || envTypeValue == HCEnvTypeDev) && autoValueChanged) {
+                item.value = autoValue;
+            } else if (shouldResetToAuto) {
                 item.value = autoValue;
             }
         }
