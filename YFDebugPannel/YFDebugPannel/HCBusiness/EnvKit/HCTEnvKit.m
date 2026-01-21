@@ -1,9 +1,9 @@
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置模型与工具类实现。
-#import "HCEnvKit.h"
+#import "HCTEnvKit.h"
 
-NSNotificationName const HCEnvKitConfigDidChangeNotification = @"HCEnvKitConfigDidChangeNotification";
+NSNotificationName const HCTEnvKitConfigDidChangeNotification = @"HCTEnvKitConfigDidChangeNotification";
 
 @implementation HCEnvConfig
 
@@ -107,17 +107,17 @@ static NSString *HCEnvTypeDescription(HCEnvType envType) {
 
 @end
 
-@implementation HCEnvKit
+@implementation HCTEnvKit
 
-static NSString *const kHCEnvKitDefaultsKey = @"HCEnvKit.config";
-static NSString *const kHCEnvKitReleaseBaseURL = @"https://release.example.com";
-static NSString *const kHCEnvKitUatTemplate = @"https://uat-%ld-%@.example.com";
-static NSString *const kHCEnvKitUatTemplateNoVersion = @"https://uat-%ld.example.com";
-static NSString *const kHCEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
-static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example.com";
+static NSString *const kHCTEnvKitDefaultsKey = @"HCTEnvKit.config";
+static NSString *const kHCTEnvKitReleaseBaseURL = @"https://release.example.com";
+static NSString *const kHCTEnvKitUatTemplate = @"https://uat-%ld-%@.example.com";
+static NSString *const kHCTEnvKitUatTemplateNoVersion = @"https://uat-%ld.example.com";
+static NSString *const kHCTEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
+static NSString *const kHCTEnvKitDevTemplateNoVersion = @"https://dev-%ld.example.com";
 
 + (HCEnvConfig *)currentConfig {
-    NSDictionary *stored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kHCEnvKitDefaultsKey];
+    NSDictionary *stored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kHCTEnvKitDefaultsKey];
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
     if (stored) {
         NSNumber *envType = stored[@"envType"];
@@ -152,44 +152,40 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
         payload[@"version"] = config.version ?: @"v1";
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:payload forKey:kHCEnvKitDefaultsKey];
+    [defaults setObject:payload forKey:kHCTEnvKitDefaultsKey];
     HCEnvBuildResult *result = [self buildResult:config];
     NSLog(@"Current Env = %@， result = %@", payload, result.description);
-    [[NSNotificationCenter defaultCenter] postNotificationName:HCEnvKitConfigDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:HCTEnvKitConfigDidChangeNotification object:nil];
 }
 
 + (HCEnvBuildResult *)buildResult:(HCEnvConfig *)config {
     HCEnvBuildResult *result = [[HCEnvBuildResult alloc] init];
     result.isolation = config.isolation ?: @"";
     result.saas = config.saas ?: @"";
-    if (config.customBaseURL.length > 0) {
-        result.displayName = @"自定义";
-        result.baseURL = config.customBaseURL;
-        return result;
-    }
-
-    if (config.envType == HCEnvTypeRelease) {
-        result.displayName = @"线上";
-        result.baseURL = kHCEnvKitReleaseBaseURL;
-        return result;
-    }
-
+    HCEnvType effectiveType = (config.customBaseURL.length > 0) ? HCEnvTypeCustom : config.envType;
     NSString *version = config.version ?: @"";
     BOOL hasVersion = version.length > 0;
-    if (config.envType == HCEnvTypeUat) {
-        result.displayName = [NSString stringWithFormat:@"uat-%ld", (long)config.clusterIndex];
-        if (hasVersion) {
-            result.baseURL = [NSString stringWithFormat:kHCEnvKitUatTemplate, (long)config.clusterIndex, version];
-        } else {
-            result.baseURL = [NSString stringWithFormat:kHCEnvKitUatTemplateNoVersion, (long)config.clusterIndex];
-        }
-    } else {
-        result.displayName = [NSString stringWithFormat:@"dev-%ld", (long)config.clusterIndex];
-        if (hasVersion) {
-            result.baseURL = [NSString stringWithFormat:kHCEnvKitDevTemplate, (long)config.clusterIndex, version];
-        } else {
-            result.baseURL = [NSString stringWithFormat:kHCEnvKitDevTemplateNoVersion, (long)config.clusterIndex];
-        }
+    switch (effectiveType) {
+        case HCEnvTypeCustom:
+            result.displayName = @"自定义";
+            result.baseURL = config.customBaseURL ?: @"";
+            break;
+        case HCEnvTypeRelease:
+            result.displayName = @"线上";
+            result.baseURL = kHCTEnvKitReleaseBaseURL;
+            break;
+        case HCEnvTypeUat:
+            result.displayName = [NSString stringWithFormat:@"uat-%ld", (long)config.clusterIndex];
+            result.baseURL = hasVersion
+                ? [NSString stringWithFormat:kHCTEnvKitUatTemplate, (long)config.clusterIndex, version]
+                : [NSString stringWithFormat:kHCTEnvKitUatTemplateNoVersion, (long)config.clusterIndex];
+            break;
+        case HCEnvTypeDev:
+            result.displayName = [NSString stringWithFormat:@"dev-%ld", (long)config.clusterIndex];
+            result.baseURL = hasVersion
+                ? [NSString stringWithFormat:kHCTEnvKitDevTemplate, (long)config.clusterIndex, version]
+                : [NSString stringWithFormat:kHCTEnvKitDevTemplateNoVersion, (long)config.clusterIndex];
+            break;
     }
     return result;
 }
