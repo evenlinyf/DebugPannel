@@ -397,7 +397,7 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         item.enabled = pending;
     };
 
-    NSArray<YFCellItem *> *items = @[envType, cluster, version, saas, isolation, result, save];
+    NSArray<YFCellItem *> *items = @[envType, cluster, saas, version, isolation, result, save];
     YFEnvSection *section = [YFEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];

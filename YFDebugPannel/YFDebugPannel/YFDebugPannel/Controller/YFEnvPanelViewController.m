@@ -123,7 +123,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                                                               message:message
                                                               options:item.options ?: @[]
                                                       selectedOption:selectedOption
-                                                           sourceView:nil
+                                                           sourceView:self.view
                                                      selectionHandler:^(NSString *option) {
         [weakSelf applyValue:option forItem:item];
     }];

@@ -47,6 +47,11 @@
                 [action setValue:[UIImage systemImageNamed:@"checkmark"] forKey:@"image"];
                 [action setValue:[UIColor systemBlueColor] forKey:@"titleTextColor"];
             }
+        } else {
+            if (@available(iOS 13.0, *)) {
+                [action setValue:nil forKey:@"image"];
+                [action setValue:UIColor.blackColor forKey:@"titleTextColor"];
+            }
         }
         [sheet addAction:action];
     }
