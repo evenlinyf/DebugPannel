@@ -118,9 +118,11 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
 - (void)presentPickerForItem:(YFCellItem *)item {
     __weak typeof(self) weakSelf = self;
     NSString *message = item.detail.length > 0 ? item.detail : nil;
+    NSString *selectedOption = item.value ? [NSString stringWithFormat:@"%@", item.value] : nil;
     UIAlertController *sheet = [YFAlertPresenter actionSheetWithTitle:item.title
                                                               message:message
                                                               options:item.options ?: @[]
+                                                      selectedOption:selectedOption
                                                            sourceView:nil
                                                      selectionHandler:^(NSString *option) {
         [weakSelf applyValue:option forItem:item];
