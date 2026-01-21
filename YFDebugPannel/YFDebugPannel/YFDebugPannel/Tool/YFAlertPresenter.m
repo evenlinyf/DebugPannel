@@ -44,7 +44,8 @@
         }];
         if (selectedOption.length > 0 && [option isEqualToString:selectedOption]) {
             if (@available(iOS 13.0, *)) {
-                action.image = [UIImage systemImageNamed:@"checkmark"];
+                [action setValue:[UIImage systemImageNamed:@"checkmark"] forKey:@"image"];
+                [action setValue:[UIColor systemBlueColor] forKey:@"titleTextColor"];
             }
         }
         [sheet addAction:action];

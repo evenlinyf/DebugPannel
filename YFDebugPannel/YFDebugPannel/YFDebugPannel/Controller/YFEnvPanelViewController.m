@@ -257,7 +257,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             }
             cell.textLabel.text = item.title;
             cell.textLabel.textAlignment = NSTextAlignmentNatural;
-            cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
+//            cell.textLabel.font = [UIFont systemFontOfSize:16.0 weight:UIFontWeightSemibold];
             cell.detailTextLabel.text = item.detail;
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
