@@ -124,27 +124,33 @@ static NSString *const kHCEnvKitDevTemplateNoVersion = @"https://dev-%ld.example
         if (envType) {
             config.envType = envType.integerValue;
         }
-        NSNumber *clusterIndex = stored[@"clusterIndex"];
-        if (clusterIndex) {
-            config.clusterIndex = clusterIndex.integerValue;
+        if (config.envType != HCEnvTypeCustom) {
+            NSNumber *clusterIndex = stored[@"clusterIndex"];
+            if (clusterIndex) {
+                config.clusterIndex = clusterIndex.integerValue;
+            }
         }
         config.isolation = stored[@"isolation"] ?: @"";
         config.saas = stored[@"saas"] ?: @"";
-        config.version = stored[@"version"] ?: @"v1";
+        if (config.envType != HCEnvTypeCustom) {
+            config.version = stored[@"version"] ?: @"v1";
+        }
         config.customBaseURL = stored[@"customBaseURL"] ?: @"";
     }
     return config;
 }
 
 + (void)saveConfig:(HCEnvConfig *)config {
-    NSDictionary *payload = @{
+    NSMutableDictionary *payload = [@{
         @"envType": @(config.envType),
-        @"clusterIndex": @(config.clusterIndex),
         @"isolation": config.isolation ?: @"",
         @"saas": config.saas ?: @"",
-        @"version": config.version ?: @"v1",
         @"customBaseURL": config.customBaseURL ?: @""
-    };
+    } mutableCopy];
+    if (config.envType != HCEnvTypeCustom) {
+        payload[@"clusterIndex"] = @(config.clusterIndex);
+        payload[@"version"] = config.version ?: @"v1";
+    }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:payload forKey:kHCEnvKitDefaultsKey];
     [[NSNotificationCenter defaultCenter] postNotificationName:HCEnvKitConfigDidChangeNotification object:nil];

@@ -37,6 +37,9 @@ static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
 }
 
 static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
+    if (config.envType == HCEnvTypeCustom) {
+        return config.customBaseURL ?: @"";
+    }
     HCEnvConfig *autoConfig = [[HCEnvConfig alloc] init];
     autoConfig.envType = config.envType;
     autoConfig.clusterIndex = config.clusterIndex;
@@ -257,12 +260,16 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     cluster.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
         HCEnvType envTypeValue = YFIntValue(envItem.value);
-        NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreCluster, envTypeValue);
+        NSString *newStoreKey = (envTypeValue == HCEnvTypeCustom) ? @"" : storeKeyForEnvType(kEnvItemStoreCluster, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
         if (storeKeyChanged) {
-            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
-            item.value = stored ?: item.defaultValue;
+            if (newStoreKey.length > 0) {
+                id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
+                item.value = stored ?: item.defaultValue;
+            } else {
+                item.value = item.defaultValue;
+            }
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
         item.hidden = (envTypeValue == HCEnvTypeRelease || envTypeValue == HCEnvTypeCustom);
@@ -299,6 +306,16 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
         item.hidden = (envTypeValue == HCEnvTypeRelease);
+        if (envTypeValue == HCEnvTypeCustom) {
+            if (![item.value isKindOfClass:[NSString class]] || [(NSString *)item.value length] == 0) {
+                id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
+                if (stored) {
+                    item.value = stored;
+                }
+            }
+            item.autoValue = nil;
+            return;
+        }
         NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
         NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
         NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
@@ -355,12 +372,16 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
     version.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
         HCEnvType envTypeValue = YFIntValue(envItem.value);
-        NSString *newStoreKey = storeKeyForEnvType(kEnvItemStoreVersion, envTypeValue);
+        NSString *newStoreKey = (envTypeValue == HCEnvTypeCustom) ? @"" : storeKeyForEnvType(kEnvItemStoreVersion, envTypeValue);
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
         item.storeKey = newStoreKey;
         if (storeKeyChanged) {
-            id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
-            item.value = stored ?: item.defaultValue;
+            if (newStoreKey.length > 0) {
+                id stored = [[NSUserDefaults standardUserDefaults] objectForKey:newStoreKey];
+                item.value = stored ?: item.defaultValue;
+            } else {
+                item.value = item.defaultValue;
+            }
         }
         item.enabled = (envTypeValue != HCEnvTypeRelease);
         item.hidden = (envTypeValue == HCEnvTypeRelease || envTypeValue == HCEnvTypeCustom);
