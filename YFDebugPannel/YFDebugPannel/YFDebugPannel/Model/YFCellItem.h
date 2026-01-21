@@ -32,7 +32,7 @@ typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 /// 右侧详情文案（可选）。
 @property (nonatomic, copy) NSString *detail;
 /// 自动生成/展示的值字符串。
-@property (nonatomic, copy) NSString *autoValue;
+@property (nonatomic, copy, nullable) NSString *autoValue;
 /// 是否可交互/可用。
 @property (nonatomic, assign) BOOL enabled;
 /// 是否隐藏该项。
@@ -59,7 +59,7 @@ typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 /// Cell 的展示类型。
 @property (nonatomic, assign) YFCellItemType type;
 /// 当前值（类型随 cell 类型变化）。
-@property (nonatomic, strong) id value;
+@property (nonatomic, strong, nullable) id value;
 
 /// Stepper 最小值。
 @property (nonatomic, assign) NSInteger stepperMin;
