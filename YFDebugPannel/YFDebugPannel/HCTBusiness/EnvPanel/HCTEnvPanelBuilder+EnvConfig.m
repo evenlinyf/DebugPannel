@@ -7,6 +7,7 @@
 #import "YFEnvSection.h"
 #import "YFCellItem.h"
 #import "YFValueHelpers.h"
+#import "YFHapticFeedback.h"
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
@@ -136,12 +137,20 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         NSString *newStoreKey = @"";
         switch (envTypeValue) {
             case HCEnvTypeRelease:
-            case HCEnvTypeUat:
-            case HCEnvTypeDev:
                 newStoreKey = storeKeyForEnvType(kEnvItemStoreCluster, envTypeValue);
+                item.enabled = NO;
+                item.hidden = YES;
                 break;
             case HCEnvTypeCustom:
                 newStoreKey = @"";
+                item.enabled = YES;
+                item.hidden = YES;
+                break;
+            case HCEnvTypeUat:
+            case HCEnvTypeDev:
+                newStoreKey = storeKeyForEnvType(kEnvItemStoreCluster, envTypeValue);
+                item.enabled = YES;
+                item.hidden = NO;
                 break;
         }
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
@@ -153,21 +162,6 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
             } else {
                 item.value = item.defaultValue;
             }
-        }
-        switch (envTypeValue) {
-            case HCEnvTypeRelease:
-                item.enabled = NO;
-                item.hidden = YES;
-                break;
-            case HCEnvTypeCustom:
-                item.enabled = YES;
-                item.hidden = YES;
-                break;
-            case HCEnvTypeUat:
-            case HCEnvTypeDev:
-                item.enabled = YES;
-                item.hidden = NO;
-                break;
         }
         NSInteger current = MAX(kEnvClusterMin, YFIntValue(item.value));
         current = MIN(kEnvClusterMax, current);
@@ -288,12 +282,20 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         NSString *newStoreKey = @"";
         switch (envTypeValue) {
             case HCEnvTypeRelease:
-            case HCEnvTypeUat:
-            case HCEnvTypeDev:
                 newStoreKey = storeKeyForEnvType(kEnvItemStoreVersion, envTypeValue);
+                item.enabled = NO;
+                item.hidden = YES;
                 break;
             case HCEnvTypeCustom:
                 newStoreKey = @"";
+                item.enabled = YES;
+                item.hidden = YES;
+                break;
+            case HCEnvTypeUat:
+            case HCEnvTypeDev:
+                newStoreKey = storeKeyForEnvType(kEnvItemStoreVersion, envTypeValue);
+                item.enabled = YES;
+                item.hidden = NO;
                 break;
         }
         BOOL storeKeyChanged = ![item.storeKey isEqualToString:newStoreKey];
@@ -305,21 +307,6 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
             } else {
                 item.value = item.defaultValue;
             }
-        }
-        switch (envTypeValue) {
-            case HCEnvTypeRelease:
-                item.enabled = NO;
-                item.hidden = YES;
-                break;
-            case HCEnvTypeCustom:
-                item.enabled = YES;
-                item.hidden = YES;
-                break;
-            case HCEnvTypeUat:
-            case HCEnvTypeDev:
-                item.enabled = YES;
-                item.hidden = NO;
-                break;
         }
     };
 
@@ -442,6 +429,7 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         if (onSave) {
             onSave();
         }
+        [YFHapticFeedback notificationSuccess];
         [[NSNotificationCenter defaultCenter] postNotificationName:HCTEnvPanelDidSaveNotification object:nil];
     };
 }
