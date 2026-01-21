@@ -2,7 +2,7 @@
 /// 创建人：Codex
 /// 用途：调试面板主页面控制器实现。
 #import "YFEnvPanelViewController.h"
-#import "YFEnvPanelBuilder.h"
+#import "HCTEnvPanelBuilder.h"
 #import "YFCellItem.h"
 #import "YFEnvSection.h"
 #import "YFSegmentCell.h"
@@ -65,13 +65,13 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
 - (instancetype)initWithBuilder:(id<YFDebugPannelProtocol>)builder {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _builder = builder ?: [[YFEnvPanelBuilder alloc] init];
+        _builder = builder ?: [[HCTEnvPanelBuilder alloc] init];
     }
     return self;
 }
 
 - (instancetype)init {
-    return [self initWithBuilder:[[YFEnvPanelBuilder alloc] init]];
+    return [self initWithBuilder:[[HCTEnvPanelBuilder alloc] init]];
 }
 
 - (void)applyValue:(id)value forItem:(YFCellItem *)item {

@@ -17,7 +17,7 @@ typedef NS_ENUM(NSInteger, HCEnvType) {
     HCEnvTypeCustom,
 };
 
-FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
+FOUNDATION_EXPORT NSNotificationName const HCTEnvKitConfigDidChangeNotification;
 
 /// 创建时间：2026/01/08
 /// 创建人：Codex
@@ -54,7 +54,7 @@ FOUNDATION_EXPORT NSNotificationName const HCEnvKitConfigDidChangeNotification;
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境配置读取、保存与结果构建的工具类。
-@interface HCEnvKit : NSObject
+@interface HCTEnvKit : NSObject
 /// 读取当前已保存的环境配置。
 + (HCEnvConfig *)currentConfig;
 /// 保存环境配置并广播变更通知。
