@@ -30,17 +30,24 @@
 + (UIAlertController *)actionSheetWithTitle:(NSString *)title
                                     message:(NSString *)message
                                     options:(NSArray<NSString *> *)options
+                             selectedOption:(NSString *)selectedOption
                                  sourceView:(UIView *)sourceView
                            selectionHandler:(YFAlertOptionHandler)selectionHandler {
     UIAlertController *sheet = [UIAlertController alertControllerWithTitle:title
                                                                    message:message
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     for (NSString *option in options ?: @[]) {
-        [sheet addAction:[UIAlertAction actionWithTitle:option style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
+        UIAlertAction *action = [UIAlertAction actionWithTitle:option style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
             if (selectionHandler) {
                 selectionHandler(option);
             }
-        }]];
+        }];
+        if (selectedOption.length > 0 && [option isEqualToString:selectedOption]) {
+            if (@available(iOS 13.0, *)) {
+                action.image = [UIImage systemImageNamed:@"checkmark"];
+            }
+        }
+        [sheet addAction:action];
     }
     [sheet addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
     if (sheet.popoverPresentationController) {

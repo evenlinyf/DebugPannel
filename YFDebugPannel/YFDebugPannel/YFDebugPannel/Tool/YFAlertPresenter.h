@@ -19,6 +19,7 @@ typedef void (^YFAlertOptionHandler)(NSString *option);
 + (UIAlertController *)actionSheetWithTitle:(nullable NSString *)title
                                     message:(nullable NSString *)message
                                     options:(NSArray<NSString *> *)options
+                             selectedOption:(nullable NSString *)selectedOption
                                  sourceView:(nullable UIView *)sourceView
                            selectionHandler:(nullable YFAlertOptionHandler)selectionHandler;
 
