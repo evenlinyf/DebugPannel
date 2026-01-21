@@ -9,6 +9,7 @@
 #import "YFSwitchCell.h"
 #import "YFStepperCell.h"
 #import "YFAlertPresenter.h"
+#import "YFHapticFeedback.h"
 
 @interface YFEnvPanelViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -288,6 +289,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             break;
         case YFCellItemTypeAction:
             if (item.actionHandler) {
+                [YFHapticFeedback impactLight];
                 item.actionHandler(item);
                 [self.builder refreshSections:self.sections];
                 [self.tableView reloadData];

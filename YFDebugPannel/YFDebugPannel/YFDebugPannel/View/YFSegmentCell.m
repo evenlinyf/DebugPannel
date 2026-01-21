@@ -4,6 +4,7 @@
 #import "YFSegmentCell.h"
 #import "YFCellItem.h"
 #import "YFValueHelpers.h"
+#import "YFHapticFeedback.h"
 
 @interface YFSegmentCell ()
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
@@ -47,6 +48,7 @@
 }
 
 - (void)segmentChanged:(UISegmentedControl *)sender {
+    [YFHapticFeedback selectionChanged];
     if (self.valueChanged) {
         self.valueChanged(sender.selectedSegmentIndex);
     }

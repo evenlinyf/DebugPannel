@@ -4,6 +4,7 @@
 #import "YFStepperCell.h"
 #import "YFCellItem.h"
 #import "YFValueHelpers.h"
+#import "YFHapticFeedback.h"
 
 @interface YFStepperCell ()
 @property (nonatomic, strong) UIStepper *stepper;
@@ -41,6 +42,7 @@
 
 - (void)stepperChanged:(UIStepper *)sender {
     NSInteger value = (NSInteger)sender.value;
+    [YFHapticFeedback selectionChanged];
     if (self.valueChanged) {
         self.valueChanged(value);
     }
