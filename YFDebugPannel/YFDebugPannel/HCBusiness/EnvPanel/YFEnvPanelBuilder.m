@@ -27,7 +27,7 @@ static NSString *const kEnvItemStoreCluster = @"HCEnvKit.cluster";
 static NSString *const kEnvItemStoreSaas = @"HCEnvKit.saas";
 static NSString *const kEnvItemStoreResult = @"HCEnvKit.result";
 static NSInteger const kEnvClusterMin = 1;
-static NSInteger const kEnvClusterMax = 20;
+static NSInteger const kEnvClusterMax = 30;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
 static const void *kYFEnvPanelSaveBaselineKey = &kYFEnvPanelSaveBaselineKey;
 
@@ -240,8 +240,8 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                           title:@"环境编号"
                                                        storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
                                                    defaultValue:[NSString stringWithFormat:@"%ld", (long)initialCluster]
-                                                        minimum:1
-                                                        maximum:20];
+                                                        minimum:kEnvClusterMin
+                                                        maximum:kEnvClusterMax];
     cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.detailTextColor = [UIColor redColor];
