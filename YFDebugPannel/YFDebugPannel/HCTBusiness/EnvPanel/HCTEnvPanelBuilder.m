@@ -85,9 +85,4 @@ NSNotificationName const HCTEnvPanelDidSaveNotification = @"HCTEnvPanelDidSaveNo
     }
 }
 
-+ (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections {
-    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
-    return [self configFromItems:itemsById];
-}
-
 @end

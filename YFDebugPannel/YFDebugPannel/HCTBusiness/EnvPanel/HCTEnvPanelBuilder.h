@@ -32,12 +32,4 @@ FOUNDATION_EXPORT NSNotificationName const HCTEnvPanelDidSaveNotification;
 + (NSDictionary<NSString *, YFCellItem *> *)indexItemsByIdFromSections:(NSArray<YFEnvSection *> *)sections;
 /// 对所有区块执行 recompute 刷新。
 + (void)refreshSections:(NSArray<YFEnvSection *> *)sections;
-/// 根据区块配置构建环境配置模型。
-+ (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections;
-/// 绑定保存按钮行为并在保存后触发回调。
-+ (void)configureSaveActionForSections:(NSArray<YFEnvSection *> *)sections onSave:(dispatch_block_t)onSave;
-/// 更新保存按钮可见状态。
-+ (void)updateSaveItemVisibilityInSections:(NSArray<YFEnvSection *> *)sections;
-/// 捕获当前状态用于后续对比。
-+ (void)captureBaselineForSections:(NSArray<YFEnvSection *> *)sections;
 @end

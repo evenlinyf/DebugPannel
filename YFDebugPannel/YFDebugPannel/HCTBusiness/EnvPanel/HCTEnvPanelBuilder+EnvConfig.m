@@ -467,6 +467,11 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
     objc_setAssociatedObject(saveItem, kHCTEnvPanelSaveBaselineKey, baseline, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
++ (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections {
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
+    return [self configFromItems:itemsById];
+}
+
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById {
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
     YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
