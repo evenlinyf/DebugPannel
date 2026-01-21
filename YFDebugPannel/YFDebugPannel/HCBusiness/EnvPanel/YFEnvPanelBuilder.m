@@ -236,8 +236,12 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
 
     // 环境编号：需要根据 envType 切换持久化 key。
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
-    YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster title:@"环境编号" storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType) defaultValue:[NSString stringWithFormat:@"%ld", (long)initialCluster] minimum:1 maximum:20];
-    cluster.value = [NSString stringWithFormat:@"%ld", (long)initialCluster];
+    YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster
+                                                          title:@"环境编号"
+                                                       storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
+                                                   defaultValue:[NSString stringWithFormat:@"%ld", (long)initialCluster]
+                                                        minimum:1
+                                                        maximum:20];
     cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.detailTextColor = [UIColor redColor];
@@ -284,7 +288,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                       title:@"Saas 环境"
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
                                                defaultValue:[NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster]];
-    saas.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster];
     saas.usesStoredValueOnLoad = NO;
     saas.disabledHint = @"仅 uat/dev 可用";
     saas.detail = @"随环境编号自动变化";
@@ -339,7 +342,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                            title:@"隔离参数"
                                                         storeKey:kEnvItemStoreIsolation
                                                     defaultValue:config.isolation];
-    isolation.value = config.isolation;
     isolation.usesStoredValueOnLoad = NO;
     isolation.disabledHint = @"仅 uat/dev 可用";
     isolation.dependsOn = @[YFEnvItemIdEnvType];
@@ -364,7 +366,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                          title:@"版本号"
                                                       storeKey:storeKeyForEnvType(kEnvItemStoreVersion, config.envType)
                                                   defaultValue:config.version];
-    version.value = config.version;
     version.detail = @"版本号会赋值到 uat-* 后面， 比如 uat 3, 版本号设置 v3, url 就会变成 uat3-v3";
     version.usesStoredValueOnLoad = NO;
     version.disabledHint = @"仅 uat/dev 可用";
@@ -393,7 +394,6 @@ static void persistAllItemsInSections(NSArray<YFEnvSection *> *sections) {
                                                                title:@"环境"
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
                                                         defaultValue:resultValue];
-    result.value = resultValue;
     result.usesStoredValueOnLoad = NO;
     NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(cluster.value));
     displayCluster = MIN(kEnvClusterMax, displayCluster);
