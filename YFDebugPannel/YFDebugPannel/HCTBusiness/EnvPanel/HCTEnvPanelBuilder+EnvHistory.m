@@ -21,16 +21,8 @@ static NSString *customHistoryOptionValue(NSDictionary<NSString *, NSString *> *
 }
 
 static NSArray<NSDictionary<NSString *, NSString *> *> *defaultCustomHistoryEntries(void) {
-    return @[
-        @{
-            HCTEnvHistoryBaseURLKey : @"https://custom-uat.example.com",
-            HCTEnvHistorySaasKey : @"hpc-uat-1"
-        },
-        @{
-            HCTEnvHistoryBaseURLKey : @"https://custom-dev.example.com",
-            HCTEnvHistorySaasKey : @"hpc-uat-2"
-        }
-    ];
+    HCTEnvKitConfiguration *configuration = [HCTEnvKit configuration];
+    return configuration.defaultCustomHistoryEntries ?: @[];
 }
 
 static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntriesInternal(void) {
@@ -65,6 +57,11 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntriesInte
         }];
     }
     return [normalized copy];
+}
+
+static NSInteger customHistoryLimit(void) {
+    NSInteger limit = [HCTEnvKit configuration].customHistoryLimit;
+    return limit > 0 ? limit : 20;
 }
 
 @implementation HCTEnvPanelBuilder (EnvHistory)
@@ -147,8 +144,9 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntriesInte
         HCTEnvHistoryBaseURLKey : baseURL,
         HCTEnvHistorySaasKey : saas ?: @""
     } atIndex:0];
-    if (history.count > 20) {
-        [history removeObjectsInRange:NSMakeRange(20, history.count - 20)];
+    NSInteger limit = customHistoryLimit();
+    if (history.count > limit) {
+        [history removeObjectsInRange:NSMakeRange(limit, history.count - limit)];
     }
     [[NSUserDefaults standardUserDefaults] setObject:history forKey:kEnvItemStoreCustomHistory];
     return YES;
