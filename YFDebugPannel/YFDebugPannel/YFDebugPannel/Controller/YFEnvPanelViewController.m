@@ -124,7 +124,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                                                               message:message
                                                               options:item.options ?: @[]
                                                       selectedOption:selectedOption
-                                                           sourceView:self.view
+                                                           sourceView:UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad ? self.view : nil
                                                      selectionHandler:^(NSString *option) {
         [weakSelf applyValue:option forItem:item];
     }];
