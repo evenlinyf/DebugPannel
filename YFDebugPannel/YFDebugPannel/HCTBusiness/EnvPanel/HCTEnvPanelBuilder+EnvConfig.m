@@ -7,6 +7,7 @@
 #import "YFEnvSection.h"
 #import "YFCellItem.h"
 #import "YFValueHelpers.h"
+#import "YFAlertPresenter.h"
 #import "YFHapticFeedback.h"
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
@@ -17,6 +18,22 @@
 @end
 
 static const void *kHCTEnvPanelSaveBaselineKey = &kHCTEnvPanelSaveBaselineKey;
+static NSString *const kEnvItemStoreCustomHistory = @"HCTEnvKit.customHistory";
+NSString *const HCTEnvHistoryBaseURLKey = @"baseURL";
+NSString *const HCTEnvHistorySaasKey = @"saas";
+
+static NSArray<NSDictionary<NSString *, NSString *> *> *defaultCustomHistoryEntries(void) {
+    return @[
+        @{
+            HCTEnvHistoryBaseURLKey : @"https://custom-uat.example.com",
+            HCTEnvHistorySaasKey : @"hpc-uat-1"
+        },
+        @{
+            HCTEnvHistoryBaseURLKey : @"https://custom-dev.example.com",
+            HCTEnvHistorySaasKey : @"hpc-uat-2"
+        }
+    ];
+}
 
 static YFCellItem *saveItemFromSections(NSArray<YFEnvSection *> *sections) {
     NSDictionary<NSString *, YFCellItem *> *itemsById = [HCTEnvPanelBuilder indexItemsByIdFromSections:sections];
@@ -86,6 +103,123 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
     return @"";
 }
 
+static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntries(void) {
+    NSArray *stored = [[NSUserDefaults standardUserDefaults] arrayForKey:kEnvItemStoreCustomHistory];
+    NSMutableArray<NSDictionary<NSString *, NSString *> *> *normalized = [NSMutableArray array];
+    NSArray *merged = stored ?: @[];
+    NSMutableArray *candidates = [NSMutableArray arrayWithArray:defaultCustomHistoryEntries()];
+    if ([merged isKindOfClass:[NSArray class]]) {
+        [candidates addObjectsFromArray:merged];
+    }
+    for (id entry in candidates) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        NSDictionary *dict = (NSDictionary *)entry;
+        NSString *baseURL = [dict[HCTEnvHistoryBaseURLKey] isKindOfClass:[NSString class]] ? dict[HCTEnvHistoryBaseURLKey] : @"";
+        NSString *saas = [dict[HCTEnvHistorySaasKey] isKindOfClass:[NSString class]] ? dict[HCTEnvHistorySaasKey] : @"";
+        if (baseURL.length == 0) {
+            continue;
+        }
+        BOOL exists = [normalized indexOfObjectPassingTest:^BOOL(NSDictionary<NSString *, NSString *> *obj, NSUInteger idx, BOOL *stop) {
+            BOOL sameBase = [obj[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
+            BOOL sameSaas = [obj[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
+            return sameBase && sameSaas;
+        }] != NSNotFound;
+        if (exists) {
+            continue;
+        }
+        [normalized addObject:@{
+            HCTEnvHistoryBaseURLKey : baseURL,
+            HCTEnvHistorySaasKey : saas
+        }];
+    }
+    return [normalized copy];
+}
+
+static NSArray<NSString *> *customHistoryOptions(void) {
+    NSMutableArray<NSString *> *options = [NSMutableArray array];
+    for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
+        NSString *baseURL = entry[HCTEnvHistoryBaseURLKey] ?: @"";
+        if (baseURL.length > 0) {
+            [options addObject:baseURL];
+        }
+    }
+    return [options copy];
+}
+
+static BOOL customHistoryContainsConfig(HCEnvConfig *config) {
+    if (!config || config.envType != HCEnvTypeCustom) {
+        return NO;
+    }
+    NSString *baseURL = [config.customBaseURL isKindOfClass:[NSString class]] ? config.customBaseURL : @"";
+    if (baseURL.length == 0) {
+        return NO;
+    }
+    NSString *saas = [config.saas isKindOfClass:[NSString class]] ? config.saas : @"";
+    for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
+        BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
+        BOOL sameSaas = [entry[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
+        if (sameBase && sameSaas) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+static UIViewController *currentTopController(void) {
+    UIWindow *window = UIApplication.sharedApplication.keyWindow;
+    if (!window) {
+        for (UIWindow *candidate in UIApplication.sharedApplication.windows) {
+            if (candidate.isKeyWindow) {
+                window = candidate;
+                break;
+            }
+        }
+    }
+    UIViewController *controller = window.rootViewController;
+    while (controller.presentedViewController) {
+        controller = controller.presentedViewController;
+    }
+    if ([controller isKindOfClass:[UINavigationController class]]) {
+        return ((UINavigationController *)controller).topViewController ?: controller;
+    }
+    if ([controller isKindOfClass:[UITabBarController class]]) {
+        return ((UITabBarController *)controller).selectedViewController ?: controller;
+    }
+    return controller;
+}
+
+static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSection *> *sections) {
+    UIViewController *presenter = currentTopController();
+    if (!presenter || config.envType != HCEnvTypeCustom) {
+        return;
+    }
+    if (customHistoryContainsConfig(config)) {
+        return;
+    }
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"保存历史记录"
+                                                                   message:@"是否保存到历史记录？"
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    __weak UIViewController *weakPresenter = presenter;
+    __weak NSArray<YFEnvSection *> *weakSections = sections;
+    [alert addAction:[UIAlertAction actionWithTitle:@"不保存" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"保存" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
+        BOOL saved = [HCTEnvPanelBuilder appendCustomHistoryFromConfig:config];
+        UIViewController *strongPresenter = weakPresenter;
+        NSArray<YFEnvSection *> *strongSections = weakSections;
+        if (!saved && strongPresenter) {
+            [YFAlertPresenter presentToastFrom:strongPresenter message:@"自定义环境地址为空，未保存" duration:1.0];
+            return;
+        }
+        if (strongSections) {
+            [HCTEnvPanelBuilder refreshSections:strongSections];
+            [[NSNotificationCenter defaultCenter] postNotificationName:HCTEnvPanelDidSaveNotification object:nil];
+        }
+    }]];
+    [presenter presentViewController:alert animated:YES completion:nil];
+}
+
 @implementation HCTEnvPanelBuilder (EnvConfig)
 
 /// 如何新增配置项（重要）：
@@ -103,6 +237,56 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
                                                         options:envOptions
                                                    defaultValue:@(config.envType)];
     envType.value = @(config.envType);
+
+    YFCellItem *history = [YFCellItem pickerItemWithIdentifier:YFEnvItemIdCustomHistory
+                                                         title:@"历史记录"
+                                                      storeKey:@""
+                                                  defaultValue:@""
+                                                       options:customHistoryOptions()];
+    history.usesStoredValueOnLoad = NO;
+    history.detail = @"选择后自动填充自定义环境";
+    history.disabledHint = @"仅自定义环境可用";
+    history.dependsOn = @[YFEnvItemIdEnvType];
+    history.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
+        YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
+        HCEnvType envTypeValue = YFIntValue(envItem.value);
+        NSArray<NSString *> *options = customHistoryOptions();
+        item.options = options;
+        BOOL hasOptions = options.count > 0;
+        item.enabled = (envTypeValue == HCEnvTypeCustom) && hasOptions;
+        item.hidden = (envTypeValue != HCEnvTypeCustom) || !hasOptions;
+        if (envTypeValue != HCEnvTypeCustom) {
+            item.value = nil;
+            item.autoValue = nil;
+            return;
+        }
+        NSString *currentValue = [item.value isKindOfClass:[NSString class]] ? item.value : @"";
+        NSString *appliedValue = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
+        if (currentValue.length == 0 || [currentValue isEqualToString:appliedValue]) {
+            return;
+        }
+        NSDictionary<NSString *, NSString *> *selectedEntry = nil;
+        for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
+            if ([entry[HCTEnvHistoryBaseURLKey] isEqualToString:currentValue]) {
+                selectedEntry = entry;
+                break;
+            }
+        }
+        if (!selectedEntry) {
+            return;
+        }
+        item.autoValue = currentValue;
+        YFCellItem *saasItem = itemsById[YFEnvItemIdSaas];
+        YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
+        NSString *saasValue = selectedEntry[HCTEnvHistorySaasKey] ?: @"";
+        NSString *baseURLValue = selectedEntry[HCTEnvHistoryBaseURLKey] ?: @"";
+        if (saasItem) {
+            saasItem.value = saasValue;
+        }
+        if (resultItem) {
+            resultItem.value = baseURLValue;
+        }
+    };
 
     // 环境编号：需要根据 envType 切换持久化 key。
     NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
@@ -397,7 +581,7 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         item.enabled = pending;
     };
 
-    NSArray<YFCellItem *> *items = @[envType, cluster, saas, version, isolation, result, save];
+    NSArray<YFCellItem *> *items = @[envType, history, cluster, saas, version, isolation, result, save];
     YFEnvSection *section = [YFEnvSection sectionWithTitle:@"环境配置" items:items];
 
     NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:@[section]];
@@ -429,6 +613,7 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
         if (onSave) {
             onSave();
         }
+        presentCustomHistorySavePrompt(config, strongSections);
         [YFHapticFeedback notificationSuccess];
         [[NSNotificationCenter defaultCenter] postNotificationName:HCTEnvPanelDidSaveNotification object:nil];
     };
@@ -458,6 +643,39 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
 + (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections {
     NSDictionary<NSString *, YFCellItem *> *itemsById = [self indexItemsByIdFromSections:sections];
     return [self configFromItems:itemsById];
+}
+
++ (NSArray<NSDictionary<NSString *, NSString *> *> *)customHistoryEntries {
+    return customHistoryEntries();
+}
+
++ (BOOL)appendCustomHistoryFromConfig:(HCEnvConfig *)config {
+    if (!config || config.envType != HCEnvTypeCustom) {
+        return NO;
+    }
+    NSString *baseURL = [config.customBaseURL isKindOfClass:[NSString class]] ? config.customBaseURL : @"";
+    if (baseURL.length == 0) {
+        return NO;
+    }
+    NSString *saas = [config.saas isKindOfClass:[NSString class]] ? config.saas : @"";
+    NSMutableArray<NSDictionary<NSString *, NSString *> *> *history = [customHistoryEntries() mutableCopy];
+    NSIndexSet *duplicated = [history indexesOfObjectsPassingTest:^BOOL(NSDictionary<NSString *, NSString *> *entry, NSUInteger idx, BOOL *stop) {
+        BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
+        BOOL sameSaas = [entry[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
+        return sameBase && sameSaas;
+    }];
+    if (duplicated.count > 0) {
+        [history removeObjectsAtIndexes:duplicated];
+    }
+    [history insertObject:@{
+        HCTEnvHistoryBaseURLKey : baseURL,
+        HCTEnvHistorySaasKey : saas ?: @""
+    } atIndex:0];
+    if (history.count > 20) {
+        [history removeObjectsInRange:NSMakeRange(20, history.count - 20)];
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:history forKey:kEnvItemStoreCustomHistory];
+    return YES;
 }
 
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById {

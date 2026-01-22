@@ -16,6 +16,7 @@ FOUNDATION_EXPORT NSString *const YFEnvItemIdSaas;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdIsolation;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdVersion;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdResult;
+FOUNDATION_EXPORT NSString *const YFEnvItemIdCustomHistory;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdElb;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdSave;
 FOUNDATION_EXPORT NSNotificationName const HCTEnvPanelDidSaveNotification;

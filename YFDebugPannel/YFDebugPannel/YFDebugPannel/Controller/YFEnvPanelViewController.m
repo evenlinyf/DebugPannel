@@ -57,6 +57,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     if (self.presentingViewController) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"关闭" style:UIBarButtonItemStylePlain target:self action:@selector(closeTapped)];
     }
+
 }
 
 - (void)closeTapped {

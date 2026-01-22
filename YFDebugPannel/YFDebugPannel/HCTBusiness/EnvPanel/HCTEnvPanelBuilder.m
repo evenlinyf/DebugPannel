@@ -15,6 +15,7 @@ NSString *const YFEnvItemIdSaas = @"env.saas";
 NSString *const YFEnvItemIdIsolation = @"env.isolation";
 NSString *const YFEnvItemIdVersion = @"env.version";
 NSString *const YFEnvItemIdResult = @"env.result";
+NSString *const YFEnvItemIdCustomHistory = @"env.custom.history";
 NSString *const YFEnvItemIdElb = @"config.elb";
 NSString *const YFEnvItemIdSave = @"env.save";
 NSNotificationName const HCTEnvPanelDidSaveNotification = @"HCTEnvPanelDidSaveNotification";
