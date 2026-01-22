@@ -17,55 +17,17 @@
 + (const void *)saveBaselineKey;
 @end
 
+@interface HCTEnvPanelBuilder (EnvHistoryPrivate)
++ (NSArray<NSString *> *)customHistoryOptions;
++ (NSDictionary<NSString *, NSString *> *)customHistoryComponentsFromValue:(NSString *)value;
++ (BOOL)customHistoryContainsConfig:(HCEnvConfig *)config;
+@end
+
+#pragma mark - Constants
+
 static const void *kHCTEnvPanelSaveBaselineKey = &kHCTEnvPanelSaveBaselineKey;
-static NSString *const kEnvItemStoreCustomHistory = @"HCTEnvKit.customHistory";
-NSString *const HCTEnvHistoryBaseURLKey = @"baseURL";
-NSString *const HCTEnvHistorySaasKey = @"saas";
-static NSString *const kCustomHistoryValueSeparator = @" | ";
 
-static NSString *customHistoryOptionValue(NSDictionary<NSString *, NSString *> *entry) {
-    NSString *baseURL = entry[HCTEnvHistoryBaseURLKey] ?: @"";
-    NSString *saas = entry[HCTEnvHistorySaasKey] ?: @"";
-    if (saas.length > 0) {
-        return [NSString stringWithFormat:@"%@%@%@", baseURL, kCustomHistoryValueSeparator, saas];
-    }
-    return baseURL;
-}
-
-static NSDictionary<NSString *, NSString *> *customHistoryComponentsFromValue(NSString *value) {
-    if (![value isKindOfClass:[NSString class]] || value.length == 0) {
-        return @{
-            HCTEnvHistoryBaseURLKey : @"",
-            HCTEnvHistorySaasKey : @""
-        };
-    }
-    NSRange separatorRange = [value rangeOfString:kCustomHistoryValueSeparator];
-    if (separatorRange.location != NSNotFound) {
-        NSString *baseURL = [value substringToIndex:separatorRange.location];
-        NSString *saas = [value substringFromIndex:NSMaxRange(separatorRange)];
-        return @{
-            HCTEnvHistoryBaseURLKey : baseURL ?: @"",
-            HCTEnvHistorySaasKey : saas ?: @""
-        };
-    }
-    return @{
-        HCTEnvHistoryBaseURLKey : value ?: @"",
-        HCTEnvHistorySaasKey : @""
-    };
-}
-
-static NSArray<NSDictionary<NSString *, NSString *> *> *defaultCustomHistoryEntries(void) {
-    return @[
-        @{
-            HCTEnvHistoryBaseURLKey : @"https://custom-uat.example.com",
-            HCTEnvHistorySaasKey : @"hpc-uat-1"
-        },
-        @{
-            HCTEnvHistoryBaseURLKey : @"https://custom-dev.example.com",
-            HCTEnvHistorySaasKey : @"hpc-uat-2"
-        }
-    ];
-}
+#pragma mark - Section Helpers
 
 static YFCellItem *saveItemFromSections(NSArray<YFEnvSection *> *sections) {
     NSDictionary<NSString *, YFCellItem *> *itemsById = [HCTEnvPanelBuilder indexItemsByIdFromSections:sections];
@@ -98,6 +60,8 @@ static NSInteger const kEnvClusterMax = 30;
 static NSString *const kEnvSaasPrefix = @"hpc-uat-";
 
 // 环境配置需要按环境类型隔离持久化 key。
+#pragma mark - Env Formatting
+
 static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
     return [NSString stringWithFormat:@"%@.%ld", baseKey, (long)envType];
 }
@@ -135,69 +99,7 @@ static NSString *envDisplayLabel(HCEnvType envType, NSInteger clusterValue) {
     return @"";
 }
 
-static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntries(void) {
-    NSArray *stored = [[NSUserDefaults standardUserDefaults] arrayForKey:kEnvItemStoreCustomHistory];
-    NSMutableArray<NSDictionary<NSString *, NSString *> *> *normalized = [NSMutableArray array];
-    NSArray *merged = stored ?: @[];
-    NSMutableArray *candidates = [NSMutableArray arrayWithArray:defaultCustomHistoryEntries()];
-    if ([merged isKindOfClass:[NSArray class]]) {
-        [candidates addObjectsFromArray:merged];
-    }
-    for (id entry in candidates) {
-        if (![entry isKindOfClass:[NSDictionary class]]) {
-            continue;
-        }
-        NSDictionary *dict = (NSDictionary *)entry;
-        NSString *baseURL = [dict[HCTEnvHistoryBaseURLKey] isKindOfClass:[NSString class]] ? dict[HCTEnvHistoryBaseURLKey] : @"";
-        NSString *saas = [dict[HCTEnvHistorySaasKey] isKindOfClass:[NSString class]] ? dict[HCTEnvHistorySaasKey] : @"";
-        if (baseURL.length == 0) {
-            continue;
-        }
-        BOOL exists = [normalized indexOfObjectPassingTest:^BOOL(NSDictionary<NSString *, NSString *> *obj, NSUInteger idx, BOOL *stop) {
-            BOOL sameBase = [obj[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
-            BOOL sameSaas = [obj[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
-            return sameBase && sameSaas;
-        }] != NSNotFound;
-        if (exists) {
-            continue;
-        }
-        [normalized addObject:@{
-            HCTEnvHistoryBaseURLKey : baseURL,
-            HCTEnvHistorySaasKey : saas
-        }];
-    }
-    return [normalized copy];
-}
-
-static NSArray<NSString *> *customHistoryOptions(void) {
-    NSMutableArray<NSString *> *options = [NSMutableArray array];
-    for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
-        NSString *optionValue = customHistoryOptionValue(entry);
-        if (optionValue.length > 0) {
-            [options addObject:optionValue];
-        }
-    }
-    return [options copy];
-}
-
-static BOOL customHistoryContainsConfig(HCEnvConfig *config) {
-    if (!config || config.envType != HCEnvTypeCustom) {
-        return NO;
-    }
-    NSString *baseURL = [config.customBaseURL isKindOfClass:[NSString class]] ? config.customBaseURL : @"";
-    if (baseURL.length == 0) {
-        return NO;
-    }
-    NSString *saas = [config.saas isKindOfClass:[NSString class]] ? config.saas : @"";
-    for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
-        BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
-        BOOL sameSaas = [entry[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
-        if (sameBase && sameSaas) {
-            return YES;
-        }
-    }
-    return NO;
-}
+#pragma mark - UI Helpers
 
 static UIViewController *currentTopController(void) {
     UIWindow *window = UIApplication.sharedApplication.keyWindow;
@@ -227,7 +129,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     if (!presenter || config.envType != HCEnvTypeCustom) {
         return;
     }
-    if (customHistoryContainsConfig(config)) {
+    if ([HCTEnvPanelBuilder customHistoryContainsConfig:config]) {
         return;
     }
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"保存历史记录"
@@ -254,6 +156,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
 
 @implementation HCTEnvPanelBuilder (EnvConfig)
 
+#pragma mark - Section Builders
+
 /// 如何新增配置项（重要）：
 /// 1. 在本文件顶部新增常量标识（如 YFEnvItemIdXXX）与持久化 key（如 kEnvItemStoreXXX）。
 /// 2. 在 buildEnvSection 中创建 YFCellItem，补充 title、type、storeKey/defaultValue、dependsOn 和 recomputeBlock。
@@ -274,7 +178,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                                                          title:@"历史记录"
                                                       storeKey:@""
                                                   defaultValue:@""
-                                                       options:customHistoryOptions()];
+                                                       options:[self customHistoryOptions]];
     history.usesStoredValueOnLoad = NO;
     history.detail = @"选择后自动填充自定义环境";
     history.disabledHint = @"仅自定义环境可用";
@@ -282,7 +186,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     history.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
         HCEnvType envTypeValue = YFIntValue(envItem.value);
-        NSArray<NSString *> *options = customHistoryOptions();
+        NSArray<NSString *> *options = [self customHistoryOptions];
         item.options = options;
         BOOL hasOptions = options.count > 0;
         item.enabled = (envTypeValue == HCEnvTypeCustom) && hasOptions;
@@ -297,9 +201,9 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
         if (currentValue.length == 0 || [currentValue isEqualToString:appliedValue]) {
             return;
         }
-        NSDictionary<NSString *, NSString *> *selectedComponents = customHistoryComponentsFromValue(currentValue);
+        NSDictionary<NSString *, NSString *> *selectedComponents = [self customHistoryComponentsFromValue:currentValue];
         NSDictionary<NSString *, NSString *> *selectedEntry = nil;
-        for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
+        for (NSDictionary<NSString *, NSString *> *entry in [self customHistoryEntries]) {
             BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:selectedComponents[HCTEnvHistoryBaseURLKey]];
             NSString *selectedSaas = selectedComponents[HCTEnvHistorySaasKey] ?: @"";
             if (selectedSaas.length > 0) {
@@ -660,6 +564,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     };
 }
 
+#pragma mark - Save State Helpers
+
 + (void)updateSaveItemVisibilityInSections:(NSArray<YFEnvSection *> *)sections {
     YFCellItem *saveItem = saveItemFromSections(sections);
     if (!saveItem) {
@@ -686,38 +592,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     return [self configFromItems:itemsById];
 }
 
-+ (NSArray<NSDictionary<NSString *, NSString *> *> *)customHistoryEntries {
-    return customHistoryEntries();
-}
-
-+ (BOOL)appendCustomHistoryFromConfig:(HCEnvConfig *)config {
-    if (!config || config.envType != HCEnvTypeCustom) {
-        return NO;
-    }
-    NSString *baseURL = [config.customBaseURL isKindOfClass:[NSString class]] ? config.customBaseURL : @"";
-    if (baseURL.length == 0) {
-        return NO;
-    }
-    NSString *saas = [config.saas isKindOfClass:[NSString class]] ? config.saas : @"";
-    NSMutableArray<NSDictionary<NSString *, NSString *> *> *history = [customHistoryEntries() mutableCopy];
-    NSIndexSet *duplicated = [history indexesOfObjectsPassingTest:^BOOL(NSDictionary<NSString *, NSString *> *entry, NSUInteger idx, BOOL *stop) {
-        BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:baseURL];
-        BOOL sameSaas = [entry[HCTEnvHistorySaasKey] ?: @"" isEqualToString:saas ?: @""];
-        return sameBase && sameSaas;
-    }];
-    if (duplicated.count > 0) {
-        [history removeObjectsAtIndexes:duplicated];
-    }
-    [history insertObject:@{
-        HCTEnvHistoryBaseURLKey : baseURL,
-        HCTEnvHistorySaasKey : saas ?: @""
-    } atIndex:0];
-    if (history.count > 20) {
-        [history removeObjectsInRange:NSMakeRange(20, history.count - 20)];
-    }
-    [[NSUserDefaults standardUserDefaults] setObject:history forKey:kEnvItemStoreCustomHistory];
-    return YES;
-}
+#pragma mark - Config Mapping
 
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById {
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
