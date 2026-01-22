@@ -17,6 +17,11 @@
 + (const void *)saveBaselineKey;
 @end
 
+@interface HCTEnvPanelBuilder (LegacyConfig)
++ (NSString *)legacyBaseURL;
++ (NSString *)legacySaasEnv;
+@end
+
 @interface HCTEnvPanelBuilder (EnvHistoryPrivate)
 + (NSArray<NSString *> *)customHistoryOptions;
 + (NSDictionary<NSString *, NSString *> *)customHistoryComponentsFromValue:(NSString *)value;
@@ -64,6 +69,21 @@ static NSString *const kEnvSaasPrefix = @"hpc-uat-";
 
 static NSString *storeKeyForEnvType(NSString *baseKey, HCEnvType envType) {
     return [NSString stringWithFormat:@"%@.%ld", baseKey, (long)envType];
+}
+
+static HCEnvConfig *initialConfigForEnvSection(void) {
+    HCEnvConfig *config = [HCTEnvKit currentConfig];
+    if ([HCTEnvKit hasSavedConfig]) {
+        return config;
+    }
+    NSString *legacyBaseURL = [HCTEnvPanelBuilder legacyBaseURL];
+    NSString *legacySaasEnv = [HCTEnvPanelBuilder legacySaasEnv];
+    HCEnvConfig *legacyConfig = [HCTEnvKit configByParsingBaseURL:legacyBaseURL saasEnv:legacySaasEnv];
+    if (!legacyConfig) {
+        return config;
+    }
+    [HCTEnvKit saveConfig:legacyConfig];
+    return legacyConfig;
 }
 
 static NSString *autoBaseURLForConfig(HCEnvConfig *config) {
@@ -164,7 +184,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
 /// 3. 在 configFromItems 中读取新字段，映射到 HCEnvConfig 属性，并在 HCTEnvKit 中持久化该属性。
 /// 4. 如需影响联动显示，确保将新项加入 result 的 dependsOn 列表，并在 recomputeBlock 中刷新 detail/title。
 + (YFEnvSection *)buildEnvSection {
-    HCEnvConfig *config = [HCTEnvKit currentConfig];
+    HCEnvConfig *config = initialConfigForEnvSection();
 
     // 环境类型：用 segment 统一管理。
     NSArray<NSString *> *envOptions = @[@"线上", @"uat", @"dev", @"自定义"];

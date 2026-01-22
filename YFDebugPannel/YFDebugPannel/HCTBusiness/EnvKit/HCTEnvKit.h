@@ -57,6 +57,10 @@ FOUNDATION_EXPORT NSNotificationName const HCTEnvKitConfigDidChangeNotification;
 @interface HCTEnvKit : NSObject
 /// 读取当前已保存的环境配置。
 + (HCEnvConfig *)currentConfig;
+/// 是否已保存过新的环境配置。
++ (BOOL)hasSavedConfig;
+/// 从旧版 baseURL 与 saasEnv 解析出新的环境配置。
++ (HCEnvConfig *)configByParsingBaseURL:(NSString *)baseURL saasEnv:(NSString *)saasEnv;
 /// 保存环境配置并广播变更通知。
 + (void)saveConfig:(HCEnvConfig *)config;
 /// 根据配置构建生效结果。
