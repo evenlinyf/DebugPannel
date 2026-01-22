@@ -4,6 +4,9 @@
 #import "HCTEnvPanelBuilder.h"
 
 @interface HCTEnvPanelBuilder (EnvConfig)
+FOUNDATION_EXPORT NSString *const HCTEnvHistoryBaseURLKey;
+FOUNDATION_EXPORT NSString *const HCTEnvHistorySaasKey;
+
 + (YFEnvSection *)buildEnvSection;
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById;
 /// 绑定保存按钮行为并在保存后触发回调。
@@ -14,5 +17,9 @@
 + (void)captureBaselineForSections:(NSArray<YFEnvSection *> *)sections;
 /// 根据区块配置构建环境配置模型。
 + (HCEnvConfig *)configFromSections:(NSArray<YFEnvSection *> *)sections;
+/// 获取自定义环境历史记录。
++ (NSArray<NSDictionary<NSString *, NSString *> *> *)customHistoryEntries;
+/// 保存当前自定义环境到历史记录。
++ (BOOL)appendCustomHistoryFromConfig:(HCEnvConfig *)config;
 
 @end
