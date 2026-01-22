@@ -34,7 +34,7 @@ static NSString *HCEnvTypeDescription(HCEnvType envType) {
         _clusterIndex = 1;
         _isolation = @"";
         _saas = @"";
-        _version = @"v1";
+        _version = @"";
         _customBaseURL = @"";
     }
     return self;
@@ -110,13 +110,22 @@ static NSString *HCEnvTypeDescription(HCEnvType envType) {
 @implementation HCTEnvKit
 
 static NSString *const kHCTEnvKitDefaultsKey = @"HCTEnvKit.config";
-static NSString *const kHCTEnvKitReleaseBaseURL = @"https://release.example.com";
-static NSString *const kHCTEnvKitUatTemplate = @"https://uat-%ld-%@.example.com";
-static NSString *const kHCTEnvKitUatTemplateNoVersion = @"https://uat-%ld.example.com";
-static NSString *const kHCTEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
-static NSString *const kHCTEnvKitDevTemplateNoVersion = @"https://dev-%ld.example.com";
-static NSInteger const kHCTEnvKitClusterMin = 1;
-static NSInteger const kHCTEnvKitClusterMax = 30;
+static HCTEnvKitConfiguration *HCTEnvKitSharedConfiguration = nil;
+
++ (HCTEnvKitConfiguration *)configuration {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        HCTEnvKitSharedConfiguration = [[HCTEnvKitConfiguration alloc] init];
+    });
+    return HCTEnvKitSharedConfiguration;
+}
+
++ (void)setConfiguration:(HCTEnvKitConfiguration *)configuration {
+    if (!configuration) {
+        return;
+    }
+    HCTEnvKitSharedConfiguration = [configuration copy];
+}
 
 + (HCEnvConfig *)currentConfig {
     NSDictionary *stored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kHCTEnvKitDefaultsKey];
@@ -135,7 +144,7 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
         config.isolation = stored[@"isolation"] ?: @"";
         config.saas = stored[@"saas"] ?: @"";
         if (config.envType != HCEnvTypeCustom) {
-            config.version = stored[@"version"] ?: @"v1";
+            config.version = stored[@"version"] ?: @"";
         }
         config.customBaseURL = stored[@"customBaseURL"] ?: @"";
     }
@@ -149,6 +158,9 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
 + (HCEnvConfig *)configByParsingBaseURL:(NSString *)baseURL saasEnv:(NSString *)saasEnv {
     NSString *normalizedBaseURL = [HCNormalizedString(baseURL) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSString *normalizedSaas = [HCNormalizedString(saasEnv) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    HCTEnvKitConfiguration *configuration = [self configuration];
+    NSInteger clusterMin = configuration.clusterMin > 0 ? configuration.clusterMin : 1;
+    NSInteger clusterMax = configuration.clusterMax > 0 ? configuration.clusterMax : 30;
     if (normalizedBaseURL.length == 0 && normalizedSaas.length == 0) {
         return nil;
     }
@@ -180,7 +192,7 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
         NSString *envString = [lowerHost substringWithRange:[match rangeAtIndex:1]];
         NSString *clusterString = [lowerHost substringWithRange:[match rangeAtIndex:2]];
         NSInteger clusterValue = clusterString.integerValue;
-        if (clusterValue < kHCTEnvKitClusterMin || clusterValue > kHCTEnvKitClusterMax) {
+        if (clusterValue < clusterMin || clusterValue > clusterMax) {
             config.envType = HCEnvTypeCustom;
             config.customBaseURL = normalizedBaseURL;
             return config;
@@ -209,7 +221,7 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
     } mutableCopy];
     if (config.envType != HCEnvTypeCustom) {
         payload[@"clusterIndex"] = @(config.clusterIndex);
-        payload[@"version"] = config.version ?: @"v1";
+        payload[@"version"] = config.version ?: @"";
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:payload forKey:kHCTEnvKitDefaultsKey];
@@ -219,6 +231,7 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
 }
 
 + (HCEnvBuildResult *)buildResult:(HCEnvConfig *)config {
+    HCTEnvKitConfiguration *configuration = [self configuration];
     HCEnvBuildResult *result = [[HCEnvBuildResult alloc] init];
     result.isolation = config.isolation ?: @"";
     result.saas = config.saas ?: @"";
@@ -232,19 +245,19 @@ static NSInteger const kHCTEnvKitClusterMax = 30;
             break;
         case HCEnvTypeRelease:
             result.displayName = @"线上";
-            result.baseURL = kHCTEnvKitReleaseBaseURL;
+            result.baseURL = configuration.releaseBaseURL ?: @"";
             break;
         case HCEnvTypeUat:
             result.displayName = [NSString stringWithFormat:@"uat-%ld", (long)config.clusterIndex];
             result.baseURL = hasVersion
-                ? [NSString stringWithFormat:kHCTEnvKitUatTemplate, (long)config.clusterIndex, version]
-                : [NSString stringWithFormat:kHCTEnvKitUatTemplateNoVersion, (long)config.clusterIndex];
+                ? [NSString stringWithFormat:configuration.uatTemplate ?: @"", (long)config.clusterIndex, version]
+                : [NSString stringWithFormat:configuration.uatTemplateNoVersion ?: @"", (long)config.clusterIndex];
             break;
         case HCEnvTypeDev:
             result.displayName = [NSString stringWithFormat:@"dev-%ld", (long)config.clusterIndex];
             result.baseURL = hasVersion
-                ? [NSString stringWithFormat:kHCTEnvKitDevTemplate, (long)config.clusterIndex, version]
-                : [NSString stringWithFormat:kHCTEnvKitDevTemplateNoVersion, (long)config.clusterIndex];
+                ? [NSString stringWithFormat:configuration.devTemplate ?: @"", (long)config.clusterIndex, version]
+                : [NSString stringWithFormat:configuration.devTemplateNoVersion ?: @"", (long)config.clusterIndex];
             break;
     }
     return result;

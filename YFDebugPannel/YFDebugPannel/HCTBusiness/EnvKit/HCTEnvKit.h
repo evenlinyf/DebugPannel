@@ -3,6 +3,8 @@
 /// 用途：环境配置模型与工具类声明。
 #import <Foundation/Foundation.h>
 
+#import "HCTEnvKitConfiguration.h"
+
 /// 创建时间：2026/01/08
 /// 创建人：Codex
 /// 用途：环境类型枚举，用于区分线上、UAT、DEV 配置。
@@ -55,6 +57,10 @@ FOUNDATION_EXPORT NSNotificationName const HCTEnvKitConfigDidChangeNotification;
 /// 创建人：Codex
 /// 用途：环境配置读取、保存与结果构建的工具类。
 @interface HCTEnvKit : NSObject
+/// 当前环境配置基础参数。
++ (HCTEnvKitConfiguration *)configuration;
+/// 覆盖环境配置基础参数。
++ (void)setConfiguration:(HCTEnvKitConfiguration *)configuration;
 /// 读取当前已保存的环境配置。
 + (HCEnvConfig *)currentConfig;
 /// 是否已保存过新的环境配置。

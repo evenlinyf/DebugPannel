@@ -60,9 +60,24 @@ static NSString *const kEnvItemStoreVersion = @"HCTEnvKit.version";
 static NSString *const kEnvItemStoreCluster = @"HCTEnvKit.cluster";
 static NSString *const kEnvItemStoreSaas = @"HCTEnvKit.saas";
 static NSString *const kEnvItemStoreResult = @"HCTEnvKit.result";
-static NSInteger const kEnvClusterMin = 1;
-static NSInteger const kEnvClusterMax = 30;
-static NSString *const kEnvSaasPrefix = @"hpc-uat-";
+
+static HCTEnvKitConfiguration *envConfiguration(void) {
+    return [HCTEnvKit configuration];
+}
+
+static NSInteger envClusterMin(void) {
+    NSInteger minValue = envConfiguration().clusterMin;
+    return (minValue > 0) ? minValue : 1;
+}
+
+static NSInteger envClusterMax(void) {
+    NSInteger maxValue = envConfiguration().clusterMax;
+    return (maxValue > 0) ? maxValue : 30;
+}
+
+static NSString *envSaasPrefix(void) {
+    return envConfiguration().saasPrefix ?: @"hpc-uat-";
+}
 
 // 环境配置需要按环境类型隔离持久化 key。
 #pragma mark - Env Formatting
@@ -254,13 +269,15 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     };
 
     // 环境编号：需要根据 envType 切换持久化 key。
-    NSInteger initialCluster = MAX(kEnvClusterMin, config.clusterIndex);
+    NSInteger clusterMin = envClusterMin();
+    NSInteger clusterMax = envClusterMax();
+    NSInteger initialCluster = MAX(clusterMin, config.clusterIndex);
     YFCellItem *cluster = [YFCellItem stepperItemWithIdentifier:YFEnvItemIdCluster
                                                           title:@"环境编号"
                                                        storeKey:storeKeyForEnvType(kEnvItemStoreCluster, config.envType)
                                                    defaultValue:[NSString stringWithFormat:@"%ld", (long)initialCluster]
-                                                        minimum:kEnvClusterMin
-                                                        maximum:kEnvClusterMax];
+                                                        minimum:clusterMin
+                                                        maximum:clusterMax];
     cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.detailTextColor = [UIColor redColor];
@@ -275,8 +292,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
         if (!isNumber) {
             return @"环境编号需要为数字";
         }
-        if (number < kEnvClusterMin || number > kEnvClusterMax) {
-            return [NSString stringWithFormat:@"环境编号范围为 %ld-%ld", (long)kEnvClusterMin, (long)kEnvClusterMax];
+        if (number < clusterMin || number > clusterMax) {
+            return [NSString stringWithFormat:@"环境编号范围为 %ld-%ld", (long)clusterMin, (long)clusterMax];
         }
         return nil;
     };
@@ -312,8 +329,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                 item.value = item.defaultValue;
             }
         }
-        NSInteger current = MAX(kEnvClusterMin, YFIntValue(item.value));
-        current = MIN(kEnvClusterMax, current);
+        NSInteger current = MAX(clusterMin, YFIntValue(item.value));
+        current = MIN(clusterMax, current);
         item.value = [NSString stringWithFormat:@"%ld", (long)current];
         item.detail = item.value;
     };
@@ -322,7 +339,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     YFCellItem *saas = [YFCellItem stringItemWithIdentifier:YFEnvItemIdSaas
                                                       title:@"Saas 环境"
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
-                                               defaultValue:[NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)initialCluster]];
+                                               defaultValue:[NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)initialCluster]];
     saas.usesStoredValueOnLoad = NO;
     saas.disabledHint = @"仅 uat/dev 可用";
     saas.detail = @"随环境编号自动变化";
@@ -338,8 +355,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
             if (stored) {
                 item.value = stored;
             } else {
-                NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
-                item.value = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
+                NSInteger clusterValue = MAX(clusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
+                item.value = [NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)clusterValue];
             }
         }
         switch (envTypeValue) {
@@ -364,8 +381,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
             case HCEnvTypeDev: {
                 item.enabled = YES;
                 item.hidden = NO;
-                NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
-                NSString *autoValue = [NSString stringWithFormat:@"%@%ld", kEnvSaasPrefix, (long)clusterValue];
+                NSInteger clusterValue = MAX(clusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
+                NSString *autoValue = [NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)clusterValue];
                 NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
                 BOOL autoValueChanged = ![previousAuto isEqualToString:autoValue];
                 if (![item.value isKindOfClass:[NSString class]]) {
@@ -466,8 +483,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
                                                         defaultValue:resultValue];
     result.usesStoredValueOnLoad = NO;
-    NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(cluster.value));
-    displayCluster = MIN(kEnvClusterMax, displayCluster);
+    NSInteger displayCluster = MAX(clusterMin, YFIntValue(cluster.value));
+    displayCluster = MIN(clusterMax, displayCluster);
     NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
     result.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
     result.detail = autoBaseURLForConfig(config);
@@ -507,8 +524,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
             }
         }
         item.autoValue = autoBaseURL;
-        NSInteger displayCluster = MAX(kEnvClusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
-        displayCluster = MIN(kEnvClusterMax, displayCluster);
+        NSInteger displayCluster = MAX(clusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
+        displayCluster = MIN(clusterMax, displayCluster);
         NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
         item.title = [NSString stringWithFormat:@"环境：%@", displayLabel];
         switch (config.envType) {
@@ -615,6 +632,8 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
 #pragma mark - Config Mapping
 
 + (HCEnvConfig *)configFromItems:(NSDictionary<NSString *, YFCellItem *> *)itemsById {
+    NSInteger clusterMin = envClusterMin();
+    NSInteger clusterMax = envClusterMax();
     HCEnvConfig *config = [[HCEnvConfig alloc] init];
     YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
     YFCellItem *clusterItem = itemsById[YFEnvItemIdCluster];
@@ -624,12 +643,12 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     YFCellItem *resultItem = itemsById[YFEnvItemIdResult];
 
     config.envType = YFIntValue(envItem.value);
-    NSInteger clusterValue = MAX(kEnvClusterMin, YFIntValue(clusterItem.value));
-    clusterValue = MIN(kEnvClusterMax, clusterValue);
+    NSInteger clusterValue = MAX(clusterMin, YFIntValue(clusterItem.value));
+    clusterValue = MIN(clusterMax, clusterValue);
     config.clusterIndex = clusterValue;
     config.isolation = [isolationItem.value isKindOfClass:[NSString class]] ? isolationItem.value : @"";
     config.saas = [saasItem.value isKindOfClass:[NSString class]] ? saasItem.value : @"";
-    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"v1";
+    config.version = [versionItem.value isKindOfClass:[NSString class]] ? versionItem.value : @"";
     NSString *resultValue = [resultItem.value isKindOfClass:[NSString class]] ? resultItem.value : @"";
     NSString *autoBaseURL = autoBaseURLForConfig(config);
     switch (config.envType) {
