@@ -22,6 +22,9 @@ NSNotificationName const HCTEnvPanelDidSaveNotification = @"HCTEnvPanelDidSaveNo
 
 @implementation HCTEnvPanelBuilder
 
+static NSString *sLegacyBaseURL = nil;
+static NSString *sLegacySaasEnv = nil;
+
 - (NSArray<YFEnvSection *> *)buildSections {
     NSArray<YFEnvSection *> *sections = [[self class] buildSections];
     for (YFEnvSection *section in sections) {
@@ -61,6 +64,19 @@ NSNotificationName const HCTEnvPanelDidSaveNotification = @"HCTEnvPanelDidSaveNo
 + (UIViewController *)buildPanelViewController {
     YFEnvPanelViewController *controller = [[YFEnvPanelViewController alloc] initWithBuilder:[[HCTEnvPanelBuilder alloc] init]];
     return controller;
+}
+
++ (void)prepareLegacyConfigWithBaseURL:(NSString *)baseURL saasEnv:(NSString *)saasEnv {
+    sLegacyBaseURL = [baseURL isKindOfClass:[NSString class]] ? [baseURL copy] : @"";
+    sLegacySaasEnv = [saasEnv isKindOfClass:[NSString class]] ? [saasEnv copy] : @"";
+}
+
++ (NSString *)legacyBaseURL {
+    return sLegacyBaseURL ?: @"";
+}
+
++ (NSString *)legacySaasEnv {
+    return sLegacySaasEnv ?: @"";
 }
 
 + (NSDictionary<NSString *, YFCellItem *> *)indexItemsByIdFromSections:(NSArray<YFEnvSection *> *)sections {

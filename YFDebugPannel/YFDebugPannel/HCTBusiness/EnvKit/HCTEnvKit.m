@@ -115,6 +115,8 @@ static NSString *const kHCTEnvKitUatTemplate = @"https://uat-%ld-%@.example.com"
 static NSString *const kHCTEnvKitUatTemplateNoVersion = @"https://uat-%ld.example.com";
 static NSString *const kHCTEnvKitDevTemplate = @"https://dev-%ld-%@.example.com";
 static NSString *const kHCTEnvKitDevTemplateNoVersion = @"https://dev-%ld.example.com";
+static NSInteger const kHCTEnvKitClusterMin = 1;
+static NSInteger const kHCTEnvKitClusterMax = 30;
 
 + (HCEnvConfig *)currentConfig {
     NSDictionary *stored = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kHCTEnvKitDefaultsKey];
@@ -137,6 +139,64 @@ static NSString *const kHCTEnvKitDevTemplateNoVersion = @"https://dev-%ld.exampl
         }
         config.customBaseURL = stored[@"customBaseURL"] ?: @"";
     }
+    return config;
+}
+
++ (BOOL)hasSavedConfig {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kHCTEnvKitDefaultsKey] != nil;
+}
+
++ (HCEnvConfig *)configByParsingBaseURL:(NSString *)baseURL saasEnv:(NSString *)saasEnv {
+    NSString *normalizedBaseURL = [HCNormalizedString(baseURL) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *normalizedSaas = [HCNormalizedString(saasEnv) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (normalizedBaseURL.length == 0 && normalizedSaas.length == 0) {
+        return nil;
+    }
+    HCEnvConfig *config = [[HCEnvConfig alloc] init];
+    config.saas = normalizedSaas;
+    if (normalizedBaseURL.length == 0 && [normalizedSaas isEqualToString:@"customer/proxy"]) {
+        config.envType = HCEnvTypeRelease;
+        config.customBaseURL = @"";
+        return config;
+    }
+    if (normalizedBaseURL.length == 0) {
+        config.envType = HCEnvTypeCustom;
+        config.customBaseURL = @"";
+        return config;
+    }
+    NSString *host = normalizedBaseURL;
+    NSRange schemeRange = [host rangeOfString:@"://"];
+    if (schemeRange.location != NSNotFound) {
+        host = [host substringFromIndex:NSMaxRange(schemeRange)];
+    }
+    NSRange slashRange = [host rangeOfString:@"/"];
+    if (slashRange.location != NSNotFound) {
+        host = [host substringToIndex:slashRange.location];
+    }
+    NSString *lowerHost = host.lowercaseString;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^(uat|dev)-?(\\d+)(?:-?(v[0-9a-z.-]+))?" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSTextCheckingResult *match = [regex firstMatchInString:lowerHost options:0 range:NSMakeRange(0, lowerHost.length)];
+    if (match) {
+        NSString *envString = [lowerHost substringWithRange:[match rangeAtIndex:1]];
+        NSString *clusterString = [lowerHost substringWithRange:[match rangeAtIndex:2]];
+        NSInteger clusterValue = clusterString.integerValue;
+        if (clusterValue < kHCTEnvKitClusterMin || clusterValue > kHCTEnvKitClusterMax) {
+            config.envType = HCEnvTypeCustom;
+            config.customBaseURL = normalizedBaseURL;
+            return config;
+        }
+        NSString *version = @"";
+        if ([match rangeAtIndex:3].location != NSNotFound) {
+            version = [lowerHost substringWithRange:[match rangeAtIndex:3]];
+        }
+        config.envType = [envString isEqualToString:@"uat"] ? HCEnvTypeUat : HCEnvTypeDev;
+        config.clusterIndex = clusterValue;
+        config.version = version;
+        config.customBaseURL = @"";
+        return config;
+    }
+    config.envType = HCEnvTypeCustom;
+    config.customBaseURL = normalizedBaseURL;
     return config;
 }
 

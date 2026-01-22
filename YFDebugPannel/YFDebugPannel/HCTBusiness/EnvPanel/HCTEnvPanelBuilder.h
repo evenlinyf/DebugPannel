@@ -29,6 +29,8 @@ FOUNDATION_EXPORT NSNotificationName const HCTEnvPanelDidSaveNotification;
 + (NSArray<YFEnvSection *> *)buildSections;
 /// 快速构建默认的 DebugPannel 页面控制器。
 + (UIViewController *)buildPanelViewController;
+/// 传入旧版 baseURL 与 saasEnv 供环境配置初始化解析。
++ (void)prepareLegacyConfigWithBaseURL:(NSString *)baseURL saasEnv:(NSString *)saasEnv;
 /// 建立 itemId -> item 的索引（跨 section）。
 + (NSDictionary<NSString *, YFCellItem *> *)indexItemsByIdFromSections:(NSArray<YFEnvSection *> *)sections;
 /// 对所有区块执行 recompute 刷新。
