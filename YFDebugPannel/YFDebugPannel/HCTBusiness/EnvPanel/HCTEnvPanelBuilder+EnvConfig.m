@@ -21,6 +21,38 @@ static const void *kHCTEnvPanelSaveBaselineKey = &kHCTEnvPanelSaveBaselineKey;
 static NSString *const kEnvItemStoreCustomHistory = @"HCTEnvKit.customHistory";
 NSString *const HCTEnvHistoryBaseURLKey = @"baseURL";
 NSString *const HCTEnvHistorySaasKey = @"saas";
+static NSString *const kCustomHistoryValueSeparator = @" | ";
+
+static NSString *customHistoryOptionValue(NSDictionary<NSString *, NSString *> *entry) {
+    NSString *baseURL = entry[HCTEnvHistoryBaseURLKey] ?: @"";
+    NSString *saas = entry[HCTEnvHistorySaasKey] ?: @"";
+    if (saas.length > 0) {
+        return [NSString stringWithFormat:@"%@%@%@", baseURL, kCustomHistoryValueSeparator, saas];
+    }
+    return baseURL;
+}
+
+static NSDictionary<NSString *, NSString *> *customHistoryComponentsFromValue(NSString *value) {
+    if (![value isKindOfClass:[NSString class]] || value.length == 0) {
+        return @{
+            HCTEnvHistoryBaseURLKey : @"",
+            HCTEnvHistorySaasKey : @""
+        };
+    }
+    NSRange separatorRange = [value rangeOfString:kCustomHistoryValueSeparator];
+    if (separatorRange.location != NSNotFound) {
+        NSString *baseURL = [value substringToIndex:separatorRange.location];
+        NSString *saas = [value substringFromIndex:NSMaxRange(separatorRange)];
+        return @{
+            HCTEnvHistoryBaseURLKey : baseURL ?: @"",
+            HCTEnvHistorySaasKey : saas ?: @""
+        };
+    }
+    return @{
+        HCTEnvHistoryBaseURLKey : value ?: @"",
+        HCTEnvHistorySaasKey : @""
+    };
+}
 
 static NSArray<NSDictionary<NSString *, NSString *> *> *defaultCustomHistoryEntries(void) {
     return @[
@@ -140,9 +172,9 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *customHistoryEntries(voi
 static NSArray<NSString *> *customHistoryOptions(void) {
     NSMutableArray<NSString *> *options = [NSMutableArray array];
     for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
-        NSString *baseURL = entry[HCTEnvHistoryBaseURLKey] ?: @"";
-        if (baseURL.length > 0) {
-            [options addObject:baseURL];
+        NSString *optionValue = customHistoryOptionValue(entry);
+        if (optionValue.length > 0) {
+            [options addObject:optionValue];
         }
     }
     return [options copy];
@@ -265,9 +297,18 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
         if (currentValue.length == 0 || [currentValue isEqualToString:appliedValue]) {
             return;
         }
+        NSDictionary<NSString *, NSString *> *selectedComponents = customHistoryComponentsFromValue(currentValue);
         NSDictionary<NSString *, NSString *> *selectedEntry = nil;
         for (NSDictionary<NSString *, NSString *> *entry in customHistoryEntries()) {
-            if ([entry[HCTEnvHistoryBaseURLKey] isEqualToString:currentValue]) {
+            BOOL sameBase = [entry[HCTEnvHistoryBaseURLKey] isEqualToString:selectedComponents[HCTEnvHistoryBaseURLKey]];
+            NSString *selectedSaas = selectedComponents[HCTEnvHistorySaasKey] ?: @"";
+            if (selectedSaas.length > 0) {
+                BOOL sameSaas = [entry[HCTEnvHistorySaasKey] ?: @"" isEqualToString:selectedSaas];
+                if (sameBase && sameSaas) {
+                    selectedEntry = entry;
+                    break;
+                }
+            } else if (sameBase) {
                 selectedEntry = entry;
                 break;
             }
