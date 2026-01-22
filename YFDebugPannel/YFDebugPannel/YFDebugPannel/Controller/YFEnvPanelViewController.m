@@ -202,7 +202,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.userInteractionEnabled = NO;
             cell.accessoryType = UITableViewCellAccessoryNone;
             cell.detailTextLabel.text = item.detail;
-            cell.detailTextLabel.numberOfLines = 1;
+            cell.detailTextLabel.numberOfLines = 0;
             cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
             return cell;
         }
