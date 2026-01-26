@@ -55,6 +55,8 @@ typedef void (^YFCellItemActionHandler)(YFCellItem *item);
 @property (nonatomic, strong) UIColor *accessoryTextColor;
 /// 不可用时辅助视图文案颜色。
 @property (nonatomic, strong) UIColor *disabledAccessoryTextColor;
+/// 左侧图标（如需使用 SFSymbols）。
+@property (nonatomic, strong, nullable) UIImage *icon;
 
 /// Cell 的展示类型。
 @property (nonatomic, assign) YFCellItemType type;

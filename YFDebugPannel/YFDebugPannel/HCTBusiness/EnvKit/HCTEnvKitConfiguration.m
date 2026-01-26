@@ -28,7 +28,6 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *HCTEnvKitDefaultCustomHi
         _devTemplateNoVersion = @"https://dev-%ld.example.com";
         _clusterMin = 1;
         _clusterMax = 30;
-        _saasPrefix = @"hpc-uat-";
         _defaultCustomHistoryEntries = HCTEnvKitDefaultCustomHistoryEntries();
         _customHistoryLimit = 20;
     }
@@ -44,7 +43,6 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *HCTEnvKitDefaultCustomHi
     copy.devTemplateNoVersion = self.devTemplateNoVersion;
     copy.clusterMin = self.clusterMin;
     copy.clusterMax = self.clusterMax;
-    copy.saasPrefix = self.saasPrefix;
     copy.defaultCustomHistoryEntries = self.defaultCustomHistoryEntries;
     copy.customHistoryLimit = self.customHistoryLimit;
     return copy;

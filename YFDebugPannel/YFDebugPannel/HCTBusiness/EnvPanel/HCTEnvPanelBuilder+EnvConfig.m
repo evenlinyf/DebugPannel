@@ -75,8 +75,17 @@ static NSInteger envClusterMax(void) {
     return (maxValue > 0) ? maxValue : 30;
 }
 
-static NSString *envSaasPrefix(void) {
-    return envConfiguration().saasPrefix ?: @"hpc-uat-";
+static NSString *envSaasPrefixForType(HCEnvType envType) {
+    switch (envType) {
+        case HCEnvTypeDev:
+            return @"hpc-dev-";
+        case HCEnvTypeUat:
+            return @"hpc-uat-";
+        case HCEnvTypeRelease:
+        case HCEnvTypeCustom:
+            return @"hpc-uat-";
+    }
+    return @"hpc-uat-";
 }
 
 // 环境配置需要按环境类型隔离持久化 key。
@@ -208,6 +217,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                                                         options:envOptions
                                                    defaultValue:@(config.envType)];
     envType.value = @(config.envType);
+    envType.icon = [UIImage systemImageNamed:@"slider.horizontal.3"];
 
     YFCellItem *history = [YFCellItem pickerItemWithIdentifier:YFEnvItemIdCustomHistory
                                                          title:@"历史记录"
@@ -217,6 +227,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     history.usesStoredValueOnLoad = NO;
     history.detail = @"选择后自动填充自定义环境";
     history.disabledHint = @"仅自定义环境可用";
+    history.icon = [UIImage systemImageNamed:@"clock.arrow.circlepath"];
     history.dependsOn = @[YFEnvItemIdEnvType];
     history.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
@@ -281,6 +292,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     cluster.usesStoredValueOnLoad = NO;
     cluster.disabledHint = @"仅 uat/dev 可用";
     cluster.detailTextColor = [UIColor redColor];
+    cluster.icon = [UIImage systemImageNamed:@"number.circle"];
     cluster.dependsOn = @[YFEnvItemIdEnvType];
     cluster.validator = ^NSString *(NSString *input) {
         if (input.length == 0) {
@@ -339,10 +351,11 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     YFCellItem *saas = [YFCellItem stringItemWithIdentifier:YFEnvItemIdSaas
                                                       title:@"Saas 环境"
                                                    storeKey:storeKeyForEnvType(kEnvItemStoreSaas, config.envType)
-                                               defaultValue:[NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)initialCluster]];
+                                               defaultValue:[NSString stringWithFormat:@"%@%ld", envSaasPrefixForType(config.envType), (long)initialCluster]];
     saas.usesStoredValueOnLoad = NO;
     saas.disabledHint = @"仅 uat/dev 可用";
     saas.detail = @"随环境编号自动变化";
+    saas.icon = [UIImage systemImageNamed:@"shippingbox"];
     saas.dependsOn = @[YFEnvItemIdEnvType, YFEnvItemIdCluster];
     saas.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
@@ -356,7 +369,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                 item.value = stored;
             } else {
                 NSInteger clusterValue = MAX(clusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
-                item.value = [NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)clusterValue];
+                item.value = [NSString stringWithFormat:@"%@%ld", envSaasPrefixForType(envTypeValue), (long)clusterValue];
             }
         }
         switch (envTypeValue) {
@@ -382,7 +395,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                 item.enabled = YES;
                 item.hidden = NO;
                 NSInteger clusterValue = MAX(clusterMin, YFIntValue(itemsById[YFEnvItemIdCluster].value));
-                NSString *autoValue = [NSString stringWithFormat:@"%@%ld", envSaasPrefix(), (long)clusterValue];
+                NSString *autoValue = [NSString stringWithFormat:@"%@%ld", envSaasPrefixForType(envTypeValue), (long)clusterValue];
                 NSString *previousAuto = [item.autoValue isKindOfClass:[NSString class]] ? item.autoValue : @"";
                 BOOL autoValueChanged = ![previousAuto isEqualToString:autoValue];
                 if (![item.value isKindOfClass:[NSString class]]) {
@@ -407,6 +420,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                                                     defaultValue:config.isolation];
     isolation.usesStoredValueOnLoad = NO;
     isolation.disabledHint = @"仅 uat/dev 可用";
+    isolation.icon = [UIImage systemImageNamed:@"shield"];
     isolation.dependsOn = @[YFEnvItemIdEnvType];
     isolation.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
@@ -441,6 +455,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     version.detail = @"版本号会赋值到 uat-* 后面， 比如 uat 3, 版本号设置 v3, url 就会变成 uat3-v3";
     version.usesStoredValueOnLoad = NO;
     version.disabledHint = @"仅 uat/dev 可用";
+    version.icon = [UIImage systemImageNamed:@"tag"];
     version.dependsOn = @[YFEnvItemIdEnvType];
     version.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         YFCellItem *envItem = itemsById[YFEnvItemIdEnvType];
@@ -483,6 +498,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
                                                             storeKey:storeKeyForEnvType(kEnvItemStoreResult, config.envType)
                                                         defaultValue:resultValue];
     result.usesStoredValueOnLoad = NO;
+    result.icon = [UIImage systemImageNamed:@"globe"];
     NSInteger displayCluster = MAX(clusterMin, YFIntValue(cluster.value));
     displayCluster = MIN(clusterMax, displayCluster);
     NSString *displayLabel = envDisplayLabel(config.envType, displayCluster);
@@ -550,6 +566,7 @@ static void presentCustomHistorySavePrompt(HCEnvConfig *config, NSArray<YFEnvSec
     save.disabledTextColor = UIColor.whiteColor;
     save.detailTextColor = UIColor.whiteColor;
     save.disabledDetailTextColor = UIColor.whiteColor;
+    save.icon = [UIImage systemImageNamed:@"square.and.arrow.down"];
     save.recomputeBlock = ^(YFCellItem *item, NSDictionary<NSString *, YFCellItem *> *itemsById) {
         NSDictionary<NSString *, id> *baseline = objc_getAssociatedObject(item, [HCTEnvPanelBuilder saveBaselineKey]);
         if (!baseline) {

@@ -18,8 +18,6 @@
 @property (nonatomic, assign) NSInteger clusterMin;
 /// 集群编号最大值。
 @property (nonatomic, assign) NSInteger clusterMax;
-/// Saas 环境默认前缀。
-@property (nonatomic, copy) NSString *saasPrefix;
 /// 默认自定义环境历史记录。
 @property (nonatomic, copy) NSArray<NSDictionary<NSString *, NSString *> *> *defaultCustomHistoryEntries;
 /// 自定义历史记录最大保留数量。
