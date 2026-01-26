@@ -25,6 +25,8 @@ FOUNDATION_EXPORT NSNotificationName const HCTEnvPanelDidSaveNotification;
 /// 创建人：Codex
 /// 用途：构建 DebugPannel 页面所需的区块与配置能力。
 @interface HCTEnvPanelBuilder : NSObject <YFDebugPannelProtocol>
+/// Panel 页面控制器，便于在 builder 内 push 其他页面。
+@property (nonatomic, weak) UIViewController *panelViewController;
 /// 构建默认的面板区块（环境配置 + 配置区块）。
 + (NSArray<YFEnvSection *> *)buildSections;
 /// 快速构建默认的 DebugPannel 页面控制器。

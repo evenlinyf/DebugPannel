@@ -44,6 +44,8 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     [self.tableView registerClass:[YFSegmentCell class] forCellReuseIdentifier:kYFSegmentCellId];
     [self.tableView registerClass:[YFSwitchCell class] forCellReuseIdentifier:kYFSwitchCellId];
     [self.tableView registerClass:[YFStepperCell class] forCellReuseIdentifier:kYFStepperCellId];
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    [self.tableView addGestureRecognizer:longPress];
 
     [self.view addSubview:self.tableView];
 
@@ -64,10 +66,35 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
+    if (gesture.state != UIGestureRecognizerStateBegan) {
+        return;
+    }
+    CGPoint location = [gesture locationInView:self.tableView];
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:location];
+    if (!indexPath) {
+        return;
+    }
+    YFCellItem *item = [self itemAtIndexPath:indexPath];
+    if (!item.value) {
+        return;
+    }
+    NSString *copyText = [NSString stringWithFormat:@"%@", item.value];
+    if (copyText.length == 0) {
+        return;
+    }
+    UIPasteboard.generalPasteboard.string = copyText;
+    [YFHapticFeedback impactLight];
+    [YFAlertPresenter presentToastFrom:self message:@"已复制" duration:1.0];
+}
+
 - (instancetype)initWithBuilder:(id<YFDebugPannelProtocol>)builder {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _builder = builder ?: [[HCTEnvPanelBuilder alloc] init];
+        if ([_builder respondsToSelector:@selector(setPanelViewController:)]) {
+            _builder.panelViewController = self;
+        }
     }
     return self;
 }
@@ -170,6 +197,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 [weakSelf applyValue:@(selectedIndex) forItem:item];
             };
             [cell configureWithItem:item];
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeSwitch: {
@@ -179,6 +207,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 [weakSelf applyValue:@(isOn) forItem:item];
             };
             [cell configureWithItem:item];
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeStepper: {
@@ -188,6 +217,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
                 [weakSelf applyValue:@(value) forItem:item];
             };
             [cell configureWithItem:item minimum:item.stepperMin maximum:item.stepperMax];
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeInfo: {
@@ -204,6 +234,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.detailTextLabel.text = item.detail;
             cell.detailTextLabel.numberOfLines = 0;
             cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeEditableInfo: {
@@ -230,6 +261,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             cell.userInteractionEnabled = YES;
             cell.backgroundColor = item.enabled ? item.backgroundColor : item.disabledBackgroundColor;
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeString:
@@ -249,6 +281,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             cell.textLabel.numberOfLines = 1;
             cell.userInteractionEnabled = YES;
+            cell.imageView.image = item.icon;
             return cell;
         }
         case YFCellItemTypeAction: {
@@ -266,6 +299,7 @@ static NSString *const kYFEditableInfoCellId = @"YFEditableInfoCell";
             cell.detailTextLabel.textColor = item.enabled ? item.detailTextColor : item.disabledDetailTextColor;
             cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             cell.userInteractionEnabled = YES;
+            cell.imageView.image = item.icon;
             return cell;
         }
     }
