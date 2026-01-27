@@ -3,7 +3,6 @@
 /// 用途：SFSymbols 列表页面实现。
 #import "YFSFSymbolsViewController.h"
 
-#import "YFAlertPresenter.h"
 #import "YFHapticFeedback.h"
 
 @interface YFSFSymbolsViewController () <UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UISearchResultsUpdating>
@@ -15,8 +14,6 @@
 
 @interface YFSFSymbolsCell : UICollectionViewCell
 @property (nonatomic, strong) UIImageView *iconView;
-@property (nonatomic, strong) UILabel *titleLabel;
-@property (nonatomic, strong) UILabel *detailLabel;
 - (void)configureWithName:(NSString *)name image:(UIImage *)image;
 @end
 
@@ -34,37 +31,14 @@
         _iconView.contentMode = UIViewContentModeScaleAspectFit;
         _iconView.tintColor = UIColor.labelColor;
 
-        _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        _titleLabel.font = [UIFont systemFontOfSize:12.0 weight:UIFontWeightSemibold];
-        _titleLabel.textColor = UIColor.labelColor;
-        _titleLabel.numberOfLines = 2;
-        _titleLabel.textAlignment = NSTextAlignmentCenter;
-
-        _detailLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        _detailLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        _detailLabel.font = [UIFont systemFontOfSize:10.0];
-        _detailLabel.textColor = UIColor.secondaryLabelColor;
-        _detailLabel.textAlignment = NSTextAlignmentCenter;
-
         [self.contentView addSubview:_iconView];
-        [self.contentView addSubview:_titleLabel];
-        [self.contentView addSubview:_detailLabel];
 
         [NSLayoutConstraint activateConstraints:@[
             [_iconView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10.0],
             [_iconView.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
             [_iconView.widthAnchor constraintEqualToConstant:28.0],
             [_iconView.heightAnchor constraintEqualToConstant:28.0],
-
-            [_titleLabel.topAnchor constraintEqualToAnchor:_iconView.bottomAnchor constant:6.0],
-            [_titleLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:6.0],
-            [_titleLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-6.0],
-
-            [_detailLabel.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor constant:2.0],
-            [_detailLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:6.0],
-            [_detailLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-6.0],
-            [_detailLabel.bottomAnchor constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor constant:-8.0]
+            [_iconView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-10.0]
         ]];
     }
     return self;
@@ -73,14 +47,10 @@
 - (void)prepareForReuse {
     [super prepareForReuse];
     self.iconView.image = nil;
-    self.titleLabel.text = nil;
-    self.detailLabel.text = nil;
 }
 
 - (void)configureWithName:(NSString *)name image:(UIImage *)image {
     self.iconView.image = image ?: [UIImage systemImageNamed:@"questionmark.circle"];
-    self.titleLabel.text = name;
-    self.detailLabel.text = image ? @"点击复制" : @"不可用";
 }
 
 @end
@@ -180,7 +150,11 @@
     }
     UIPasteboard.generalPasteboard.string = name;
     [YFHapticFeedback impactLight];
-    [YFAlertPresenter presentToastFrom:self message:[NSString stringWithFormat:@"已复制 %@", name] duration:1.0];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"已复制"
+                                                                   message:name
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
@@ -188,9 +162,10 @@
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat horizontalPadding = 16.0 * 2;
     CGFloat spacing = 12.0;
-    CGFloat availableWidth = collectionView.bounds.size.width - horizontalPadding - spacing * 2;
-    CGFloat itemWidth = floor(availableWidth / 3.0);
-    return CGSizeMake(MAX(itemWidth, 90.0), 110.0);
+    CGFloat columns = 5.0;
+    CGFloat availableWidth = collectionView.bounds.size.width - horizontalPadding - spacing * (columns - 1);
+    CGFloat itemWidth = floor(availableWidth / columns);
+    return CGSizeMake(MAX(itemWidth, 56.0), 72.0);
 }
 
 #pragma mark - UISearchResultsUpdating
