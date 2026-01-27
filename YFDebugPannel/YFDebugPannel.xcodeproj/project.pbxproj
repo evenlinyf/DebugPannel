@@ -14,6 +14,8 @@
 		E5A76DFB2F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF42F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard */; };
 		E5A76DFC2F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF52F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard */; };
 		E5A76DFD2F0E900000B94B11 /* YFDebugPannel/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E5A76DF62F0E900000B94B11 /* YFDebugPannel/Assets.xcassets */; };
+		E5A76E712F20000000B94B11 /* YFDebugPannelTests/HCTEnvKitTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E5A76E702F20000000B94B11 /* YFDebugPannelTests/HCTEnvKitTests.m */; };
+		E5A76E7C2F20000000B94B11 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5A76E7B2F20000000B94B11 /* XCTest.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +27,9 @@
 		E5A76DF42F0E900000B94B11 /* YFDebugPannel/Base.lproj/Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
 		E5A76DF52F0E900000B94B11 /* YFDebugPannel/Base.lproj/LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = YFDebugPannel/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		E5A76DF62F0E900000B94B11 /* YFDebugPannel/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = YFDebugPannel/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		E5A76E702F20000000B94B11 /* YFDebugPannelTests/HCTEnvKitTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YFDebugPannelTests/HCTEnvKitTests.m; sourceTree = SOURCE_ROOT; };
+		E5A76E742F20000000B94B11 /* YFDebugPannelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YFDebugPannelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5A76E7B2F20000000B94B11 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -56,6 +61,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E5A76E762F20000000B94B11 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5A76E7C2F20000000B94B11 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -63,6 +76,8 @@
 			isa = PBXGroup;
 			children = (
 				E5A76DCF2F0E810E00B94B11 /* YFDebugPannel */,
+				E5A76E722F20000000B94B11 /* YFDebugPannelTests */,
+				E5A76E7D2F20000000B94B11 /* Frameworks */,
 				E5A76DCE2F0E810E00B94B11 /* Products */,
 				E5A76E6A2F0F583000B94B11 /* Recovered References */,
 			);
@@ -72,8 +87,25 @@
 			isa = PBXGroup;
 			children = (
 				E5A76DCD2F0E810E00B94B11 /* YFDebugPannel.app */,
+				E5A76E742F20000000B94B11 /* YFDebugPannelTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E5A76E722F20000000B94B11 /* YFDebugPannelTests */ = {
+			isa = PBXGroup;
+			children = (
+				E5A76E702F20000000B94B11 /* YFDebugPannelTests/HCTEnvKitTests.m */,
+			);
+			path = YFDebugPannelTests;
+			sourceTree = "<group>";
+		};
+		E5A76E7D2F20000000B94B11 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E5A76E7B2F20000000B94B11 /* XCTest.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		E5A76E6A2F0F583000B94B11 /* Recovered References */ = {
@@ -115,6 +147,25 @@
 			productReference = E5A76DCD2F0E810E00B94B11 /* YFDebugPannel.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E5A76E732F20000000B94B11 /* YFDebugPannelTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E5A76E782F20000000B94B11 /* Build configuration list for PBXNativeTarget "YFDebugPannelTests" */;
+			buildPhases = (
+				E5A76E752F20000000B94B11 /* Sources */,
+				E5A76E762F20000000B94B11 /* Frameworks */,
+				E5A76E772F20000000B94B11 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YFDebugPannelTests;
+			packageProductDependencies = (
+			);
+			productName = YFDebugPannelTests;
+			productReference = E5A76E742F20000000B94B11 /* YFDebugPannelTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -126,6 +177,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					E5A76DCC2F0E810E00B94B11 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					E5A76E732F20000000B94B11 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -145,6 +199,7 @@
 			projectRoot = "";
 			targets = (
 				E5A76DCC2F0E810E00B94B11 /* YFDebugPannel */,
+				E5A76E732F20000000B94B11 /* YFDebugPannelTests */,
 			);
 		};
 /* End PBXProject section */
@@ -160,6 +215,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E5A76E772F20000000B94B11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -171,6 +233,14 @@
 				E5A76DF82F0E900000B94B11 /* YFDebugPannel/App/SceneDelegate.m in Sources */,
 				E5A76DF92F0E900000B94B11 /* YFDebugPannel/App/ViewController.m in Sources */,
 				E5A76DFA2F0E900000B94B11 /* YFDebugPannel/App/main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E5A76E752F20000000B94B11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5A76E712F20000000B94B11 /* YFDebugPannelTests/HCTEnvKitTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,6 +432,52 @@
 			};
 			name = Release;
 		};
+		E5A76E792F20000000B94B11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/YFDebugPannel",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.evenlin.YFDebugPannelTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/YFDebugPannel.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/YFDebugPannel";
+			};
+			name = Debug;
+		};
+		E5A76E7A2F20000000B94B11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/YFDebugPannel",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.evenlin.YFDebugPannelTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/YFDebugPannel.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/YFDebugPannel";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -379,6 +495,15 @@
 			buildConfigurations = (
 				E5A76DE12F0E811000B94B11 /* Debug */,
 				E5A76DE22F0E811000B94B11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E5A76E782F20000000B94B11 /* Build configuration list for PBXNativeTarget "YFDebugPannelTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E5A76E792F20000000B94B11 /* Debug */,
+				E5A76E7A2F20000000B94B11 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

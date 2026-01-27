@@ -185,28 +185,73 @@ static HCTEnvKitConfiguration *HCTEnvKitSharedConfiguration = nil;
     if (slashRange.location != NSNotFound) {
         host = [host substringToIndex:slashRange.location];
     }
-    NSString *lowerHost = host.lowercaseString;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^(uat|dev)-?(\\d+)(?:-?(v[0-9a-z.-]+))?" options:NSRegularExpressionCaseInsensitive error:nil];
-    NSTextCheckingResult *match = [regex firstMatchInString:lowerHost options:0 range:NSMakeRange(0, lowerHost.length)];
-    if (match) {
-        NSString *envString = [lowerHost substringWithRange:[match rangeAtIndex:1]];
-        NSString *clusterString = [lowerHost substringWithRange:[match rangeAtIndex:2]];
-        NSInteger clusterValue = clusterString.integerValue;
+    NSString *normalizedHost = host.length > 0 ? host : normalizedBaseURL;
+
+    NSInteger matchedCluster = 0;
+    NSString *matchedVersion = @"";
+    HCEnvType matchedType = HCEnvTypeCustom;
+
+    BOOL (^matchTemplate)(NSString *, BOOL, HCEnvType) = ^BOOL(NSString *templateURL, BOOL expectsVersion, HCEnvType envType) {
+        if (templateURL.length == 0) {
+            return NO;
+        }
+        NSString *templateHost = templateURL;
+        NSRange templateSchemeRange = [templateHost rangeOfString:@"://"];
+        if (templateSchemeRange.location != NSNotFound) {
+            templateHost = [templateHost substringFromIndex:NSMaxRange(templateSchemeRange)];
+        }
+        NSRange templateSlashRange = [templateHost rangeOfString:@"/"];
+        if (templateSlashRange.location != NSNotFound) {
+            templateHost = [templateHost substringToIndex:templateSlashRange.location];
+        }
+        if (templateHost.length == 0) {
+            return NO;
+        }
+        NSString *tokenizedTemplate = [[templateHost stringByReplacingOccurrencesOfString:@"%ld" withString:@"__CLUSTER__"]
+                                       stringByReplacingOccurrencesOfString:@"%@" withString:@"__VERSION__"];
+        NSString *escapedPattern = [NSRegularExpression escapedPatternForString:tokenizedTemplate];
+        escapedPattern = [escapedPattern stringByReplacingOccurrencesOfString:@"__CLUSTER__" withString:@"(\\d+)"];
+        escapedPattern = [escapedPattern stringByReplacingOccurrencesOfString:@"__VERSION__" withString:@"([0-9a-zA-Z.-]+)"];
+        NSString *fullPattern = [NSString stringWithFormat:@"^%@$", escapedPattern];
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:fullPattern
+                                                                               options:NSRegularExpressionCaseInsensitive
+                                                                                 error:nil];
+        NSTextCheckingResult *match = [regex firstMatchInString:normalizedHost options:0 range:NSMakeRange(0, normalizedHost.length)];
+        if (!match) {
+            return NO;
+        }
+        NSRange clusterRange = [match rangeAtIndex:1];
+        if (clusterRange.location == NSNotFound) {
+            return NO;
+        }
+        NSInteger clusterValue = [[normalizedHost substringWithRange:clusterRange] integerValue];
         if (clusterValue < clusterMin || clusterValue > clusterMax) {
-            config.envType = HCEnvTypeCustom;
-            config.customBaseURL = normalizedBaseURL;
-            return config;
+            return NO;
         }
-        NSString *version = @"";
-        if ([match rangeAtIndex:3].location != NSNotFound) {
-            version = [lowerHost substringWithRange:[match rangeAtIndex:3]];
+        matchedCluster = clusterValue;
+        matchedType = envType;
+        if (expectsVersion && match.numberOfRanges > 2) {
+            NSRange versionRange = [match rangeAtIndex:2];
+            matchedVersion = (versionRange.location != NSNotFound)
+                ? [normalizedHost substringWithRange:versionRange]
+                : @"";
+        } else {
+            matchedVersion = @"";
         }
-        config.envType = [envString isEqualToString:@"uat"] ? HCEnvTypeUat : HCEnvTypeDev;
-        config.clusterIndex = clusterValue;
-        config.version = version;
+        return YES;
+    };
+
+    if (matchTemplate(configuration.uatTemplate, YES, HCEnvTypeUat)
+        || matchTemplate(configuration.uatTemplateNoVersion, NO, HCEnvTypeUat)
+        || matchTemplate(configuration.devTemplate, YES, HCEnvTypeDev)
+        || matchTemplate(configuration.devTemplateNoVersion, NO, HCEnvTypeDev)) {
+        config.envType = matchedType;
+        config.clusterIndex = matchedCluster;
+        config.version = matchedVersion ?: @"";
         config.customBaseURL = @"";
         return config;
     }
+
     config.envType = HCEnvTypeCustom;
     config.customBaseURL = normalizedBaseURL;
     return config;
