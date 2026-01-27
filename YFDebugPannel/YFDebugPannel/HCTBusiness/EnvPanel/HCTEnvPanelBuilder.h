@@ -19,6 +19,7 @@ FOUNDATION_EXPORT NSString *const YFEnvItemIdResult;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdCustomHistory;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdElb;
 FOUNDATION_EXPORT NSString *const YFEnvItemIdSave;
+FOUNDATION_EXPORT NSString *const YFEnvItemIdSFSymbols;
 FOUNDATION_EXPORT NSNotificationName const HCTEnvPanelDidSaveNotification;
 
 /// 创建时间：2026/01/08

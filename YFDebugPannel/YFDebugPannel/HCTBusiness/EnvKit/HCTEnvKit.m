@@ -187,9 +187,9 @@ static HCTEnvKitConfiguration *HCTEnvKitSharedConfiguration = nil;
     }
     NSString *normalizedHost = host.length > 0 ? host : normalizedBaseURL;
 
-    NSInteger matchedCluster = 0;
-    NSString *matchedVersion = @"";
-    HCEnvType matchedType = HCEnvTypeCustom;
+    __block NSInteger matchedCluster = 0;
+    __block NSString *matchedVersion = @"";
+    __block HCEnvType matchedType = HCEnvTypeCustom;
 
     BOOL (^matchTemplate)(NSString *, BOOL, HCEnvType) = ^BOOL(NSString *templateURL, BOOL expectsVersion, HCEnvType envType) {
         if (templateURL.length == 0) {
