@@ -8,6 +8,7 @@
 #import "YFEnvPanelViewController.h"
 #import "YFEnvSection.h"
 #import "YFCellItem.h"
+#import "YFSFSymbolsViewController.h"
 
 NSString *const YFEnvItemIdEnvType = @"env.type";
 NSString *const YFEnvItemIdCluster = @"env.cluster";
@@ -18,6 +19,7 @@ NSString *const YFEnvItemIdResult = @"env.result";
 NSString *const YFEnvItemIdCustomHistory = @"env.custom.history";
 NSString *const YFEnvItemIdElb = @"config.elb";
 NSString *const YFEnvItemIdSave = @"env.save";
+NSString *const YFEnvItemIdSFSymbols = @"config.sfsymbols";
 NSNotificationName const HCTEnvPanelDidSaveNotification = @"HCTEnvPanelDidSaveNotification";
 
 @implementation HCTEnvPanelBuilder
@@ -27,6 +29,24 @@ static NSString *sLegacySaasEnv = nil;
 
 - (NSArray<YFEnvSection *> *)buildSections {
     NSArray<YFEnvSection *> *sections = [[self class] buildSections];
+    NSDictionary<NSString *, YFCellItem *> *itemsById = [[self class] indexItemsByIdFromSections:sections];
+    YFCellItem *symbolsItem = itemsById[YFEnvItemIdSFSymbols];
+    if (symbolsItem) {
+        __weak typeof(self) weakSelf = self;
+        symbolsItem.actionHandler = ^(YFCellItem *item) {
+            UIViewController *panelController = weakSelf.panelViewController;
+            if (!panelController) {
+                return;
+            }
+            YFSFSymbolsViewController *controller = [[YFSFSymbolsViewController alloc] init];
+            if (panelController.navigationController) {
+                [panelController.navigationController pushViewController:controller animated:YES];
+            } else {
+                UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:controller];
+                [panelController presentViewController:nav animated:YES completion:nil];
+            }
+        };
+    }
     for (YFEnvSection *section in sections) {
         for (YFCellItem *item in section.items) {
             if (item.storeKey.length > 0 && item.usesStoredValueOnLoad) {

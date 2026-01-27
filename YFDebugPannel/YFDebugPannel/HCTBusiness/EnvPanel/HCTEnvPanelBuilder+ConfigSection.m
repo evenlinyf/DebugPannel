@@ -37,7 +37,11 @@
     YFCellItem *infoIt = [YFCellItem infoItemWithIdentifier:@"config.info" title:@"Information" detail:@"Hello world!"];
     infoIt.icon = [UIImage systemImageNamed:@"info.circle"];
 
-    NSArray<YFCellItem *> *items = @[elb, action, ppurl, pickerUrl, infoIt];
+    YFCellItem *sfSymbols = [YFCellItem actionItemWithIdentifier:YFEnvItemIdSFSymbols title:@"SFSymbols 图标库" handler:nil];
+    sfSymbols.detail = @"查看并复制 SFSymbols imageName";
+    sfSymbols.icon = [UIImage systemImageNamed:@"square.grid.3x3"];
+
+    NSArray<YFCellItem *> *items = @[elb, action, ppurl, pickerUrl, infoIt, sfSymbols];
     return [YFEnvSection sectionWithTitle:@"配置" items:items];
 }
 
